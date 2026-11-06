@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0a0101;
+  color: #fff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #f50604;
+  color: #ffffff;
+}
+
+/* Subtle Cursive and Editorial Typography Classes */
+.font-cursive {
+  font-family: 'Alex Brush', cursive;
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+}
+
+.font-heading {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+/* AOS drop-bounce animation from approved reference */
+[data-aos="drop-bounce"] {
+  opacity: 0;
+}
+[data-aos="drop-bounce"].aos-animate {
+  animation: dropBounce 1.2s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+}
+
+@keyframes dropBounce {
+  0% { transform: translateY(-300px); opacity: 0; }
+  50% { transform: translateY(0); opacity: 1; }
+  65% { transform: translateY(-40px); opacity: 1; }
+  80% { transform: translateY(0); opacity: 1; }
+  90% { transform: translateY(-15px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Custom Red Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0101;
+}
+::-webkit-scrollbar-thumb {
+  background: #380707;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f50604;
+}
