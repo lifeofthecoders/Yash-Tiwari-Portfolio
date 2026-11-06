@@ -101,10 +101,10 @@ Yash can customize his portfolio at any time without touching code, editing JSON
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/lifeofthecoders/yash-portfolio.git
+git clone https://github.com/lifeofthecoders/yash-tiwari-portfolio.git
 
 # Navigate to the folder
-cd yash-portfolio
+cd yash-tiwari-portfolio
 
 # Install dependencies
 npm install
