@@ -39,7 +39,8 @@ const AdminPanel = () => {
   const [busy, setBusy] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
-
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  
   const activeGroup = useMemo(
     () => PAGE_GROUPS.find((group) => group.id === activePage) || PAGE_GROUPS[0],
     [activePage]
@@ -102,14 +103,22 @@ const AdminPanel = () => {
     }
   };
 
-  const handlePublish = async () => {
-    if (!window.confirm('Publish these changes to your public portfolio now?')) return;
+  const handlePublish = () => {
+    if (busy || draftLoading) return;
+    setShowPublishConfirm(true);
+  };
+
+  const confirmPublish = async () => {
+    if (busy) return;
+
     setBusy(true);
     try {
       await publishDraft(formData);
+      setShowPublishConfirm(false);
       showToast('Portfolio changes published successfully.');
     } catch (error) {
       console.error('Publish failed:', error);
+      setShowPublishConfirm(false);
       showToast(error.message || 'Could not publish content.');
     } finally {
       setBusy(false);
@@ -169,6 +178,99 @@ const AdminPanel = () => {
         </motion.div>
       )}
 
+      {showPublishConfirm && (
+        <div
+          className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/80 backdrop-blur-md px-4 py-6"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !busy) {
+              setShowPublishConfirm(false);
+            }
+          }}
+        >
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="publish-modal-title"
+            aria-describedby="publish-modal-description"
+            initial={{ opacity: 0, scale: 0.94, y: 18 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-red-500/30 bg-[#100505] shadow-[0_25px_100px_rgba(245,6,4,0.25)]"
+          >
+            <div className="h-1 w-full bg-gradient-to-r from-transparent via-[#f50604] to-transparent" />
+
+            <div className="p-6 sm:p-7">
+              <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-500/30 bg-red-500/10 text-2xl" aria-hidden="true">
+                    🚀
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-lg font-bold text-white">Publish Changes</h3>
+                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-red-400/80">Portfolio Deployment</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setShowPublishConfirm(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-all hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Close publish confirmation"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <h4 id="publish-modal-title" className="text-xl font-bold text-white">
+                  Make your changes live?
+                </h4>
+                <p id="publish-modal-description" className="text-sm leading-relaxed text-white/55">
+                  You're about to publish your latest portfolio content. The changes will become visible to visitors on your public portfolio.
+                </p>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-red-500/20 bg-red-950/30 p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(245,6,4,0.8)]" />
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-red-400">
+                    Public Portfolio Update
+                  </span>
+                </div>
+                <p className="text-xs leading-relaxed text-white/45">
+                  Your current editor content will be published. Make sure you've reviewed your changes before continuing.
+                </p>
+              </div>
+
+              <div className="mt-7 flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setShowPublishConfirm(false)}
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 py-3 font-mono text-xs font-bold uppercase tracking-wider text-white/70 transition-all hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={confirmPublish}
+                  className="flex-1 rounded-xl bg-[#f50604] py-3 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_25px_rgba(245,6,4,0.3)] transition-all hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {busy ? 'Publishing…' : 'Publish Now →'}
+                </button>
+              </div>
+
+              <p className="mt-5 text-center font-mono text-[9px] text-white/25">
+                SECURELY PUBLISHED THROUGH SUPABASE CLOUD
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {authLoading ? (
         <div className="min-h-screen flex items-center justify-center text-white/70 font-mono text-sm">Checking secure administrator session…</div>
       ) : (!isAuthenticated || !isAdmin) ? (
@@ -189,10 +291,70 @@ const AdminPanel = () => {
                 <input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Enter your Supabase Auth email" required className="w-full bg-black/60 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#f50604] focus:outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-mono text-white/70 mb-1.5 uppercase tracking-wider">Password</label>
+                <label className="block text-xs font-mono text-white/70 mb-1.5 uppercase tracking-wider">
+                  Password
+                </label>
+
                 <div className="relative">
-                  <input type={showPassword ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter your password" required className="w-full bg-black/60 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm focus:border-[#f50604] focus:outline-none pr-12" />
-                  <button type="button" onClick={() => setShowPassword((previous) => !previous)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs font-mono">{showPassword ? 'Hide' : 'Show'}</button>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    className="w-full bg-black/60 border border-white/20 rounded-xl px-4 py-2.5 pr-24 text-white text-sm focus:border-[#f50604] focus:outline-none"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((previous) => !previous)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 text-[#f50604] hover:text-red-400 font-mono text-xs font-bold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f50604] rounded-md"
+                  >
+                    {showPassword ? (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="17"
+                          height="17"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M10.58 10.58a2 2 0 0 0 2.83 2.83" />
+                          <path d="M16.68 16.68A10.94 10.94 0 0 1 12 17.5C5 17.5 1 12 1 12a17.3 17.3 0 0 1 4.12-4.58" />
+                          <path d="M9.88 5.08A10.94 10.94 0 0 1 12 4.5c7 0 11 7.5 11 7.5a17.3 17.3 0 0 1-3.1 3.85" />
+                          <path d="m2 2 20 20" />
+                        </svg>
+                        <span>Hide</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="17"
+                          height="17"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <span>Show</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
               {(loginError || authError) && <div className="text-red-400 text-xs font-mono bg-red-950/50 border border-red-800 p-2.5 rounded-lg">{loginError || authError}</div>}
