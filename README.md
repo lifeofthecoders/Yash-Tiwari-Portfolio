@@ -1,6 +1,6 @@
-# Yash Tiwari — Premium Portfolio & Static Admin Panel
+# Yash Tiwari — Premium Portfolio & Page-Wise Content Manager
 
-A production-grade, cinematic portfolio designed for **Yash Tiwari**, B.Tech student in **Artificial Intelligence & Data Science** at **JECRC University**. Built with React 19, Vite, Tailwind CSS v4, and Framer Motion, featuring a database-free static Admin Panel for non-technical content management.
+A production-grade, cinematic portfolio designed for **Yash Tiwari**, B.Tech student in **Artificial Intelligence & Data Science** at **JECRC University**. Built with React 19, Vite, Tailwind CSS v4, and Framer Motion, featuring a page-wise content manager for editing the portfolio copy, cards, tags, nested project details, academic records, navigation, contact labels and calls to action.
 
 ---
 
@@ -11,18 +11,19 @@ A production-grade, cinematic portfolio designed for **Yash Tiwari**, B.Tech stu
 - **Cinematic Hero**: Autoplay video background with custom playback & mute controls, responsive headline, floating verified metric cards, and downloadable resume.
 - **Interactive Lanyard ID Badge**: 3D drop-bounce swinging physics animation in the About section holding Yash's illustrated portrait.
 - **Interactive Cursor Canvas**: Hardware-accelerated 2D canvas with mouse-following crimson sparks and radial spotlight (disabled automatically on touch screens).
-- **6-Stage Learning Roadmap**: Winding SVG animated dashed line that traces scroll progress and highlights active tag cards.
+- **Editable Learning Roadmap**: Winding SVG animated dashed line that traces scroll progress and highlights repeatable tag cards.
 - **Building Next Bento Grid**: Project roadmap showcase with high-tech conceptual UI visualizers and interactive case study modals.
-- **Database-Free Static Admin Panel**: Non-technical client dashboard with password protection, real-time `localStorage` persistence, backup export/import, and factory reset.
+- **Page-Wise Content Manager**: Edit headings, subtitles, body copy, CTAs, tags, projects, academic records, skills, strengths, roadmap cards, navigation, metadata and nested details. Add/remove repeatable cards and custom fields. Blank content values are omitted from the public page.
+- **Browser Storage**: Saved edits persist in the current browser origin using `localStorage`; this starter does not yet use a shared backend database or server-side CRM.
 
 ---
 
 ## ⚙️ Client Admin Panel Guide (Non-Tech Friendly)
 
-Yash can customize his portfolio at any time without touching code, editing JSON, or needing a database.
+The portfolio content can be edited from the built-in panel without changing source code. Saved edits are local to the browser and website origin where they are made; visitors on other browsers do not automatically receive those edits.
 
 ### 🔑 Authentication
-- Access credentials are provided privately to the client by the administrator.
+- The current starter still uses browser-side credentials (`admin` / `yash@admin2026`) in client JavaScript. This is not secure authentication; do not use it to protect private information or sensitive admin operations.
 
 ### 🚪 How to Open the Admin Panel
 1. **Footer Button**: Scroll to the footer and click the **`⚙️`** icon next to the "Get in Touch" button.
@@ -30,14 +31,20 @@ Yash can customize his portfolio at any time without touching code, editing JSON
 3. **URL Hash**: Add `#admin` to the end of the website URL (e.g., `http://localhost:5173/#admin`).
 
 ### 📝 What You Can Edit
-- **Identity & Contact**: Name, title, university, current semester, location, phone number, and email.
-- **Hero**: Welcoming greeting, headline, subtitle, and CTA buttons.
-- **Stats & Facts**: Semester count, Class 12th score, Class 10th score, and focus area.
-- **About Me**: Biography description and headline.
-- **Learning Roadmap**: All 6 sequential curriculum stages, status tags, and descriptions.
-- **Projects**: Project titles, categories, duration, badges, descriptions, and case study details.
-- **Academic Track**: Degrees, institutions, grades, and credentials in progress.
-- **Data Backup & Reset**: Download a backup file (`.json`), upload a backup to restore, or click **Reset to Defaults** to restore the verified original data.
+- **Profile & Navigation**: Site title/SEO metadata, identity, brand labels, contact details, social profiles and navigation items.
+- **Home / Hero**: Greeting, every heading line, subtitle, video/poster URL, playback labels, statistics and all CTA text/URLs.
+- **About**: Badge, heading, biography, image URL/alt text, fact cards and focus tags.
+- **Roadmap**: Heading, description, status pills, unlimited timeline cards and closing tagline.
+- **Skills & Strengths**: Section headings, skill categories, individual skill labels/status/tags/custom icons and personal-strength cards.
+- **Projects**: Add/remove project cards, technology tags, image URLs, per-card CTA labels/URLs, visualizer tiles and nested case-study fields/contribution lists.
+- **Academics & Credentials**: Select the current program, add/remove academic records, edit all institution/term/degree/grade/details and credential cards/competency tags.
+- **Contact & Footer**: Form placeholders, consent text, submit/success/error messages, contact labels, footer taglines, links and copyright.
+- **All Content**: Inspect and edit every saved data group, add custom fields, and clear defaults. Empty content fields are hidden by the updated public components.
+- **Backup**: Export/import all editable content as JSON or reset to the bundled starting content.
+
+### ⚠️ Current CMS Limitations
+- `localStorage` is browser-specific. Edits do not sync to other visitors/devices and do not update the GitHub source or Vercel deployment. A shared Supabase/Firebase/API database and server-side authentication are required for a multi-user production CMS.
+- Media fields accept URLs/paths. To add a new asset, place it in `public/` and enter its public path (for example `/images/profile.webp`); the panel does not upload files to a storage service.
 
 ---
 

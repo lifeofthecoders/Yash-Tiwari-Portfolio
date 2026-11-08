@@ -1,10 +1,14 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { emailjsConfig } from '../data/portfolioData';
 import { usePortfolio } from '../context/PortfolioContext';
+import { hasContent } from '../utils/content';
+import EditableExtras from './EditableExtras';
 
 const Contact = () => {
-  const { personalInfo } = usePortfolio();
+  const { personalInfo, contactContent, emailjsConfig } = usePortfolio();
+  const recipientEmail = personalInfo?.emails?.primary || '';
+  const showIdentityFields = [contactContent?.firstNamePlaceholder, contactContent?.lastNamePlaceholder, contactContent?.emailPlaceholder].some(hasContent);
+  const showContactDetails = [personalInfo?.location, personalInfo?.phone, recipientEmail, contactContent?.submitLabel].some(hasContent);
   const ref = useRef(null);
   const formRef = useRef(null);
   const [status, setStatus] = useState('idle');
@@ -23,12 +27,15 @@ const Contact = () => {
     setStatus('sending');
 
     const form = formRef.current;
-    const firstName = form.querySelector('#firstName')?.value || '';
+    const firstNameInput = form.querySelector('#firstName');
+    const emailInput = form.querySelector('#email');
+    const messageInput = form.querySelector('#message');
+    const firstName = firstNameInput?.value || '';
     const lastName = form.querySelector('#lastName')?.value || '';
-    const email = form.querySelector('#email')?.value || '';
-    const message = form.querySelector('#message')?.value || '';
+    const email = emailInput?.value || '';
+    const message = messageInput?.value || '';
 
-    if (!firstName.trim() || !email.trim() || !message.trim()) {
+    if ((firstNameInput?.required && !firstName.trim()) || (emailInput?.required && !email.trim()) || (messageInput?.required && !message.trim())) {
       setStatus('error');
       setTimeout(() => setStatus('idle'), 3000);
       return;
@@ -43,8 +50,14 @@ const Contact = () => {
       emailjsConfig.publicKey !== 'YOUR_EMAILJS_PUBLIC_KEY';
 
     if (!isConfigured) {
-      const mailtoLink = `mailto:${personalInfo.emails.primary}?subject=Portfolio Contact from ${firstName} ${lastName}&body=${encodeURIComponent(`From: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`)}`;
-      window.open(mailtoLink, '_blank');
+      if (hasContent(recipientEmail)) {
+        const mailtoLink = `mailto:${recipientEmail}?subject=Portfolio Contact from ${firstName} ${lastName}&body=${encodeURIComponent(`From: ${firstName} ${lastName}\nEmail: ${email}\n\n${message}`)}`;
+        window.open(mailtoLink, '_blank');
+      } else {
+        setStatus('error');
+        setTimeout(() => setStatus('idle'), 3000);
+        return;
+      }
       setStatus('success');
       formRef.current.reset();
       setTimeout(() => setStatus('idle'), 3000);
@@ -75,12 +88,7 @@ const Contact = () => {
         style={{ y }}
         className="absolute top-0 left-0 w-full h-full flex flex-col justify-start items-center overflow-hidden pointer-events-none z-0 pt-16 md:pt-12"
       >
-        <h1 
-          className="text-[25vw] leading-[0.75] font-black text-white/90 uppercase tracking-tighter select-none scale-y-[1.6] origin-top"
-          style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}
-        >
-          Contact
-        </h1>
+        {hasContent(contactContent?.backgroundTitle) && <h1 className="text-[25vw] leading-[0.75] font-black text-white/90 uppercase tracking-tighter select-none scale-y-[1.6] origin-top" style={{ fontFamily: "'Impact', 'Arial Black', sans-serif" }}>{contactContent.backgroundTitle}</h1>}
       </motion.div>
 
       <div className="relative z-10 w-full flex justify-end items-end">
@@ -90,73 +98,71 @@ const Contact = () => {
         >
           <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-12">
             <div>
-              <div className="text-xs font-bold tracking-[0.2em] uppercase opacity-90 font-mono">
-                Get In Touch
-              </div>
-              <h2 className="text-2xl md:text-3xl font-black font-heading mt-1">
-                Let's connect &amp; collaborate
-              </h2>
+              {hasContent(contactContent?.badge) && <div className="text-xs font-bold tracking-[0.2em] uppercase opacity-90 font-mono">{contactContent.badge}</div>}
+              {hasContent(contactContent?.heading) && <h2 className="text-2xl md:text-3xl font-black font-heading mt-1">{contactContent.heading}</h2>}
+              <EditableExtras data={contactContent} knownKeys={['backgroundTitle', 'badge', 'heading', 'emailButtonLabel', 'emailButtonHref', 'emailButtonAriaLabel', 'firstNamePlaceholder', 'lastNamePlaceholder', 'emailPlaceholder', 'messagePlaceholder', 'permissionLabel', 'submitLabel', 'sendingLabel', 'successLabel', 'errorLabel', 'locationLabel', 'phoneLabel', 'directEmailLabel']} className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-white/80 mt-2" />
             </div>
-            <a 
-              href={`mailto:${personalInfo.emails.primary}`}
+            {hasContent(contactContent?.emailButtonLabel) && hasContent(contactContent?.emailButtonHref) && <a
+              href={contactContent.emailButtonHref}
+              aria-label={contactContent?.emailButtonAriaLabel || undefined}
               className="flex items-center gap-2 text-xs font-black uppercase tracking-wider bg-white/15 hover:bg-white hover:text-[#f50604] border border-white/20 px-4 py-2.5 rounded-full transition-all duration-300 font-mono"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span>{personalInfo.emails.primary}</span>
-            </a>
+              {hasContent(contactContent?.emailButtonLabel) && <span>{contactContent.emailButtonLabel}</span>}
+            </a>}
           </div>
 
           <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-10 md:gap-14 w-full">
-            <div className="flex flex-col md:flex-row gap-10 md:gap-16 w-full">
-              <div className="flex-1 flex flex-col gap-8">
-                <div className="relative">
+            {(showIdentityFields || hasContent(contactContent?.messagePlaceholder)) && <div className="flex flex-col md:flex-row gap-10 md:gap-16 w-full">
+              {showIdentityFields && <div className="flex-1 flex flex-col gap-8">
+                {hasContent(contactContent?.firstNamePlaceholder) && <div className="relative">
                   <input 
                     type="text" 
                     id="firstName" 
                     name="first_name"
-                    placeholder="First Name" 
+                    placeholder={contactContent.firstNamePlaceholder || undefined} 
                     required
                     className="w-full bg-transparent border-b border-white/40 pb-3 text-base md:text-lg focus:outline-none focus:border-white transition-colors placeholder-white/80 font-medium rounded-none"
                   />
-                </div>
-                <div className="relative">
+                </div>}
+                {hasContent(contactContent?.lastNamePlaceholder) && <div className="relative">
                   <input 
                     type="text" 
                     id="lastName" 
                     name="last_name"
-                    placeholder="Last Name" 
+                    placeholder={contactContent.lastNamePlaceholder || undefined} 
                     className="w-full bg-transparent border-b border-white/40 pb-3 text-base md:text-lg focus:outline-none focus:border-white transition-colors placeholder-white/80 font-medium rounded-none"
                   />
-                </div>
-                <div className="relative">
+                </div>}
+                {hasContent(contactContent?.emailPlaceholder) && <div className="relative">
                   <input 
                     type="email" 
                     id="email" 
                     name="user_email"
-                    placeholder="Your Email" 
+                    placeholder={contactContent.emailPlaceholder || undefined} 
                     required
                     className="w-full bg-transparent border-b border-white/40 pb-3 text-base md:text-lg focus:outline-none focus:border-white transition-colors placeholder-white/80 font-medium rounded-none"
                   />
-                </div>
-              </div>
+                </div>}
+              </div>}
 
-              <div className="flex-1 flex flex-col">
+              {hasContent(contactContent?.messagePlaceholder) && <div className="flex-1 flex flex-col">
                 <div className="relative h-full flex flex-col">
                   <textarea 
                     id="message" 
                     name="message"
-                    placeholder="Type your message, project idea, or inquiry here..." 
+                    placeholder={contactContent.messagePlaceholder || undefined} 
                     required
                     className="w-full h-full min-h-[140px] bg-transparent border-b border-white/40 pb-3 text-base md:text-lg focus:outline-none focus:border-white transition-colors placeholder-white/80 font-medium resize-none rounded-none"
                   ></textarea>
                 </div>
-              </div>
-            </div>
+              </div>}
+            </div>}
 
             <div className="flex flex-col md:flex-row gap-8 mt-2">
-              <div className="flex-1 flex items-start gap-4 text-xs md:text-sm font-medium text-white/90">
+              {hasContent(contactContent?.permissionLabel) && <div className="flex-1 flex items-start gap-4 text-xs md:text-sm font-medium text-white/90">
                 <input 
                   type="checkbox" 
                   id="permission" 
@@ -164,22 +170,19 @@ const Contact = () => {
                   className="mt-1 w-4 h-4 rounded-sm border-white/40 bg-transparent text-white focus:ring-white focus:ring-offset-0 cursor-pointer" 
                   style={{ accentColor: "white" }}
                 />
-                <label htmlFor="permission" className="cursor-pointer max-w-[320px] leading-snug">
-                  I give permission to contact me regarding student opportunities, learning collaborations, and technical projects.
-                </label>
-              </div>
+                <label htmlFor="permission" className="cursor-pointer max-w-[320px] leading-snug">{contactContent.permissionLabel}</label>
+              </div>}
 
-              <div className="flex-1 flex flex-col gap-6 text-xs text-white/80 font-medium">
-                <p className="leading-relaxed font-mono">
-                  Location: <strong className="text-white">{personalInfo.location}</strong> · Phone: <a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="underline hover:text-white font-bold">{personalInfo.phone}</a>
-                </p>
+              {showContactDetails && <div className="flex-1 flex flex-col gap-6 text-xs text-white/80 font-medium">
+                {(hasContent(personalInfo?.location) || hasContent(personalInfo?.phone)) && <p className="leading-relaxed font-mono">
+                  {hasContent(personalInfo?.location) && <>{hasContent(contactContent?.locationLabel) && <>{contactContent.locationLabel} </>}<strong className="text-white">{personalInfo.location}</strong></>}
+                  {hasContent(personalInfo?.phone) && <>{hasContent(personalInfo?.location) ? ' · ' : ''}{hasContent(contactContent?.phoneLabel) && <>{contactContent.phoneLabel} </>}<a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`} className="underline hover:text-white font-bold">{personalInfo.phone}</a></>}
+                </p>}
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-6">
-                  <p className="leading-relaxed">
-                    Direct Email: <a href={`mailto:${personalInfo.emails.primary}`} className="underline hover:text-white font-bold">{personalInfo.emails.primary}</a>
-                  </p>
+                  {hasContent(recipientEmail) && <p className="leading-relaxed">{hasContent(contactContent?.directEmailLabel) && <>{contactContent.directEmailLabel} </>}<a href={`mailto:${recipientEmail}`} className="underline hover:text-white font-bold">{recipientEmail}</a></p>}
                   
-                  <button 
-                    type="submit" 
+                  {(hasContent(contactContent?.submitLabel) || (status === 'sending' && hasContent(contactContent?.sendingLabel)) || (status === 'success' && hasContent(contactContent?.successLabel)) || (status === 'error' && hasContent(contactContent?.errorLabel))) && <button
+                    type="submit"
                     disabled={status === 'sending'}
                     className={`px-8 py-3.5 rounded-full border border-white/50 text-white font-bold flex items-center justify-center gap-3 transition-all duration-300 group whitespace-nowrap self-start sm:self-auto uppercase tracking-wider text-xs font-mono ${
                       status === 'sending' 
@@ -197,22 +200,22 @@ const Contact = () => {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Sending...
+                        {contactContent.sendingLabel}
                       </span>
                     ) : status === 'success' ? (
-                      <span>Message Sent ✓</span>
+                      <span>{contactContent.successLabel}</span>
                     ) : status === 'error' ? (
-                      <span>Failed — Try Again</span>
-                    ) : 'Send Message'}
+                      <span>{contactContent.errorLabel}</span>
+                    ) : contactContent.submitLabel}
                     
                     {status === 'idle' && (
                       <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                       </svg>
                     )}
-                  </button>
+                  </button>}
                 </div>
-              </div>
+              </div>}
             </div>
           </form>
 

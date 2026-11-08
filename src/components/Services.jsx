@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { motion, useScroll, useSpring, useMotionValueEvent } from 'framer-motion';
 import { usePortfolio } from '../context/PortfolioContext';
+import { hasContent, contentItems, additionalTextFields } from '../utils/content';
+import EditableExtras from './EditableExtras';
 
-const TagCard = ({ number, title, status, text, className, aosDelay, aosType, pathLength, containerRef }) => {
+const TagCard = ({ number, title, status, text, className, aosDelay, aosType, pathLength, containerRef, extraFields = [] }) => {
   const ref = useRef(null);
   const [isActive, setIsActive] = useState(false);
 
@@ -44,10 +46,8 @@ const TagCard = ({ number, title, status, text, className, aosDelay, aosType, pa
         isActive ? 'bg-red-900/60 text-white' : 'bg-[#f7f7f7] text-gray-900'
       }`}>
         <div className="flex items-center justify-between mb-2">
-          <span className={`text-xl font-bold font-serif italic transition-colors duration-700 ${
-            isActive ? 'text-red-200' : 'text-[#f50604]'
-          }`}>{number}</span>
-          {status && (
+          {hasContent(number) ? <span className={`text-xl font-bold font-serif italic transition-colors duration-700 ${isActive ? 'text-red-200' : 'text-[#f50604]'}`}>{number}</span> : <span /> }
+          {hasContent(status) && (
             <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
               isActive ? 'bg-white/20 text-white' : 'bg-black/10 text-gray-700'
             }`}>
@@ -56,15 +56,9 @@ const TagCard = ({ number, title, status, text, className, aosDelay, aosType, pa
           )}
         </div>
         
-        <h3 className={`text-xl font-black mb-3 tracking-tight font-heading transition-colors duration-700 ${
-          isActive ? 'text-white' : 'text-gray-900'
-        }`}>{title}</h3>
-        
-        <p className={`text-xs md:text-sm leading-relaxed font-medium transition-colors duration-700 ${
-          isActive ? 'text-red-100' : 'text-gray-600'
-        }`}>
-          {text}
-        </p>
+        {hasContent(title) && <h3 className={`text-xl font-black mb-3 tracking-tight font-heading transition-colors duration-700 ${isActive ? 'text-white' : 'text-gray-900'}`}>{title}</h3>}
+        {hasContent(text) && <p className={`text-xs md:text-sm leading-relaxed font-medium transition-colors duration-700 ${isActive ? 'text-red-100' : 'text-gray-600'}`}>{text}</p>}
+        {extraFields.map((field) => <p key={field.key} className={`text-[11px] mt-2 font-mono ${isActive ? 'text-red-100/80' : 'text-gray-500'}`}><strong>{field.label}:</strong> {field.value}</p>)}
       </div>
     </div>
   );
@@ -72,6 +66,7 @@ const TagCard = ({ number, title, status, text, className, aosDelay, aosType, pa
 
 const Services = () => {
   const { skillsContent } = usePortfolio();
+  const visibleCards = contentItems(skillsContent?.cards).filter((card) => hasContent(card.number) || hasContent(card.title) || hasContent(card.status) || hasContent(card.text) || additionalTextFields(card, ['number', 'title', 'status', 'text']).length > 0);
   const containerRef = useRef(null);
   
   const { scrollYProgress } = useScroll({
@@ -94,18 +89,10 @@ const Services = () => {
         
         {/* Header Content */}
         <div data-aos="fade-up" className="md:absolute top-10 left-0 md:w-[450px] z-20 mb-16 md:mb-0">
-          <div className="inline-block border border-gray-300 rounded-full px-5 py-1.5 text-sm text-gray-700 font-bold mb-6 shadow-sm bg-white uppercase font-mono tracking-wider">
-            {skillsContent.badge}
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-950 leading-[1.1] mb-6 tracking-tight font-heading relative">
-            {skillsContent.heading}
-            <svg className="absolute -bottom-10 right-10 w-12 h-12 text-[#f50604]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M4 4 Q 10 10 15 15 M 15 15 L 10 15 M 15 15 L 15 10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </h2>
-          <p className="text-gray-600 text-base md:text-lg max-w-sm font-medium leading-relaxed">
-            {skillsContent.description}
-          </p>
+          {hasContent(skillsContent?.badge) && <div className="inline-block border border-gray-300 rounded-full px-5 py-1.5 text-sm text-gray-700 font-bold mb-6 shadow-sm bg-white uppercase font-mono tracking-wider">{skillsContent.badge}</div>}
+          {hasContent(skillsContent?.heading) && <h2 className="text-4xl md:text-5xl font-black text-gray-950 leading-[1.1] mb-6 tracking-tight font-heading relative">{skillsContent.heading}<svg className="absolute -bottom-10 right-10 w-12 h-12 text-[#f50604]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4 Q 10 10 15 15 M 15 15 L 10 15 M 15 15 L 15 10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></h2>}
+          {hasContent(skillsContent?.description) && <p className="text-gray-600 text-base md:text-lg max-w-sm font-medium leading-relaxed">{skillsContent.description}</p>}
+          <EditableExtras data={skillsContent} knownKeys={['badge', 'heading', 'description', 'cards', 'endText']} className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500 font-mono" labelClassName="text-gray-800 font-bold" />
         </div>
 
         {/* Desktop SVG Animated Dashed Line */}
@@ -180,7 +167,7 @@ const Services = () => {
 
         {/* Cards Container */}
         <div className="flex flex-col gap-8 md:gap-12 items-center md:block relative z-10 w-full pt-4 md:pt-0 pb-12 md:pb-0">
-          {skillsContent.cards.map((card, index) => {
+          {visibleCards.map((card, index) => {
             const positions = [
               "md:absolute md:top-[10px] md:right-[5%] lg:right-[8%] rotate-2 md:rotate-6",
               "md:absolute md:top-[340px] md:left-[5%] lg:left-[8%] -rotate-2 md:-rotate-6",
@@ -199,22 +186,23 @@ const Services = () => {
                 title={card.title}
                 status={card.status}
                 text={card.text}
-                className={positions[index]}
+                className={positions[index] || 'md:relative md:top-auto md:left-auto md:right-auto md:mt-8 md:mx-auto rotate-0'}
                 aosType={aosTypes[index]}
                 aosDelay={aosDelays[index]}
                 pathLength={pathLength}
                 containerRef={containerRef}
+                extraFields={additionalTextFields(card, ['number', 'title', 'status', 'text'])}
               />
             );
           })}
 
-          <div 
+          {hasContent(skillsContent?.endText) && <div 
             data-aos="fade-in" 
             data-aos-delay="700"
             className="hidden md:block absolute top-[1930px] left-[38%] font-cursive text-4xl text-[#f50604] rotate-3 font-bold"
           >
             {skillsContent.endText}
-          </div>
+          </div>}
         </div>
 
       </div>

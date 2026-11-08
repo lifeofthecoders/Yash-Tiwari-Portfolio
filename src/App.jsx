@@ -1,5 +1,5 @@
 import React from 'react'
-import { PortfolioProvider } from './context/PortfolioContext'
+import { PortfolioProvider, usePortfolio } from './context/PortfolioContext'
 import Preloader from './components/Preloader'
 import InteractiveCanvas from './components/InteractiveCanvas'
 import Navbar from './components/Navbar'
@@ -14,9 +14,15 @@ import Contact from './components/Contact'
 import Footer from './components/Footer'
 import AdminPanel from './components/AdminPanel'
 
-function App() {
+function PortfolioApp() {
+  const { isAdminOpen } = usePortfolio()
+
+  // The admin is a dedicated full-page screen. The public portfolio is not
+  // mounted behind it, so the CMS never appears as a modal or pop-up.
+  if (isAdminOpen) return <AdminPanel />
+
   return (
-    <PortfolioProvider>
+    <>
       <Preloader />
       <InteractiveCanvas />
       <Navbar />
@@ -29,7 +35,14 @@ function App() {
       <SoftSkills />
       <Contact />
       <Footer />
-      <AdminPanel />
+    </>
+  )
+}
+
+function App() {
+  return (
+    <PortfolioProvider>
+      <PortfolioApp />
     </PortfolioProvider>
   )
 }

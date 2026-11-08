@@ -1,5 +1,7 @@
 import React from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
+import { hasContent, contentItems } from '../utils/content';
+import EditableExtras from './EditableExtras';
 
 // Technology Icon Helper
 const TechIcon = ({ name }) => {
@@ -84,48 +86,38 @@ const getStatusBadge = (status) => {
   }
 };
 
-const SkillNode = ({ name, status, tag }) => (
+const SkillNode = ({ name, status, tag, skill }) => (
   <div className="mb-5 flex flex-col group p-2.5 rounded-xl hover:bg-white/[0.03] transition-colors">
-    <div className="flex justify-between items-center mb-1.5">
-      <div className="flex items-center gap-3">
-        <TechIcon name={name} />
-        <div>
-          <span className="text-white text-sm font-semibold tracking-wide block">{name}</span>
-          {tag && <span className="text-white/40 text-[10px] font-mono">{tag}</span>}
+    <div className="flex justify-between items-center mb-1.5 gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        {hasContent(skill?.iconText) ? <div className="w-8 h-8 rounded-md flex items-center justify-center font-mono font-black text-[10px] select-none shrink-0 border" style={{ color: skill.iconColor || '#f50604', backgroundColor: skill.iconBackground || '#250505', borderColor: skill.iconColor || '#f50604' }}>{skill.iconText}</div> : hasContent(name) && <TechIcon name={name} />}
+        <div className="min-w-0">
+          {hasContent(name) && <span className="text-white text-sm font-semibold tracking-wide block">{name}</span>}
+          {hasContent(tag) && <span className="text-white/40 text-[10px] font-mono">{tag}</span>}
         </div>
       </div>
-      <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(status)}`}>
-        {status}
-      </span>
+      {hasContent(status) && <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border shrink-0 ${getStatusBadge(status)}`}>{status}</span>}
     </div>
+    <EditableExtras data={skill} knownKeys={['name', 'status', 'tag', 'iconText', 'iconColor', 'iconBackground']} className="flex flex-wrap gap-x-3 gap-y-1 pl-11 text-[9px] font-mono text-white/50" labelClassName="text-white/80" />
     <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-1">
       <div className="h-full bg-gradient-to-r from-[#f50604] to-[#ff4d4d] rounded-full w-full opacity-60 group-hover:opacity-100 transition-opacity" />
     </div>
   </div>
 );
 
-const SkillCard = ({ category, index }) => (
-  <div
-    data-aos="fade-up"
-    data-aos-delay={index * 100}
-    className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:scale-[1.01] hover:border-[#f50604]/40 hover:shadow-[0_20px_50px_rgba(245,6,4,0.15)] transition-all duration-500"
-  >
-    <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/10">
-      <h3 className="text-white text-base md:text-lg font-black tracking-tight uppercase font-heading">
-        {category.title}
-      </h3>
-      <span className="w-2 h-2 rounded-full bg-[#f50604]"></span>
-    </div>
-    <div>
-      {category.skills.map((skill) => (
-        <SkillNode key={skill.name} name={skill.name} status={skill.status} tag={skill.tag} />
-      ))}
-    </div>
-  </div>
-);
+const SkillCard = ({ category, index }) => {
+  const skills = contentItems(category.skills).filter((skill) => hasContent(skill.name) || hasContent(skill.status) || hasContent(skill.tag) || hasContent(skill.iconText) || additionalTextFields(skill, ['name', 'status', 'tag', 'iconText', 'iconColor', 'iconBackground']).length > 0);
+  if (!hasContent(category.title) && skills.length === 0) return null;
+  return <div data-aos="fade-up" data-aos-delay={index * 100} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 hover:scale-[1.01] hover:border-[#f50604]/40 hover:shadow-[0_20px_50px_rgba(245,6,4,0.15)] transition-all duration-500">
+    {hasContent(category.title) && <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/10"><h3 className="text-white text-base md:text-lg font-black tracking-tight uppercase font-heading">{category.title}</h3><span className="w-2 h-2 rounded-full bg-[#f50604]"></span></div>}
+    <EditableExtras data={category} knownKeys={['title', 'skills']} className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-white/50 mb-2" labelClassName="text-white/80" />
+    <div>{skills.map((skill, skillIndex) => <SkillNode key={`${skill.name || 'skill'}-${skillIndex}`} name={skill.name} status={skill.status} tag={skill.tag} skill={skill} />)}</div>
+  </div>;
+};
 
 const TechnicalSkills = () => {
   const { technicalSkills } = usePortfolio();
+  const categories = contentItems(technicalSkills?.categories).filter((category) => hasContent(category.title) || contentItems(category.skills).some((skill) => hasContent(skill.name) || hasContent(skill.status) || hasContent(skill.tag) || hasContent(skill.iconText) || additionalTextFields(skill, ['name', 'status', 'tag', 'iconText', 'iconColor', 'iconBackground']).length > 0) || additionalTextFields(category, ['title', 'skills']).length > 0);
 
   return (
     <section id="skills" className="bg-[#0a0101] pt-24 pb-28 px-6 md:px-12 w-full relative overflow-hidden font-sans">
@@ -136,25 +128,18 @@ const TechnicalSkills = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <div data-aos="fade-up" className="mb-16 text-center">
-          <div className="inline-block border border-white/20 rounded-full px-5 py-1.5 text-sm text-white/70 font-bold mb-6 shadow-sm bg-white/5 backdrop-blur-sm uppercase tracking-widest font-mono">
-            ⚙️ TECHNICAL &amp; COMPUTATIONAL STACK
-          </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 uppercase font-heading">
-            Foundations &amp; Focus
-            <span className="font-editorial text-[#f50604] lowercase font-normal tracking-normal text-3xl md:text-4xl block mt-1">
-              built with intent &amp; academic rigor
-            </span>
-          </h2>
-          <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            Curated technical competencies, computer science fundamentals, and academic coursework across AI, data science, and programming.
-          </p>
+          {hasContent(technicalSkills?.sectionBadge) && <div className="inline-block border border-white/20 rounded-full px-5 py-1.5 text-sm text-white/70 font-bold mb-6 shadow-sm bg-white/5 backdrop-blur-sm uppercase tracking-widest font-mono">{technicalSkills.sectionBadge}</div>}
+          {(hasContent(technicalSkills?.heading) || hasContent(technicalSkills?.accentLine)) && <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 uppercase font-heading">
+            {hasContent(technicalSkills?.heading) && technicalSkills.heading}
+            {hasContent(technicalSkills?.accentLine) && <span className="font-editorial text-[#f50604] lowercase font-normal tracking-normal text-3xl md:text-4xl block mt-1">{technicalSkills.accentLine}</span>}
+          </h2>}
+          {hasContent(technicalSkills?.description) && <p className="text-white/60 text-base md:text-lg max-w-xl mx-auto leading-relaxed">{technicalSkills.description}</p>}
+          <EditableExtras data={technicalSkills} knownKeys={['sectionBadge', 'heading', 'accentLine', 'description', 'categories']} className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] font-mono text-white/50 mt-3" />
         </div>
 
         {/* Skills Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          {technicalSkills.categories.map((category, index) => (
-            <SkillCard key={category.title} category={category} index={index} />
-          ))}
+          {categories.map((category, index) => <SkillCard key={`${category.title || 'category'}-${index}`} category={category} index={index} />)}
         </div>
       </div>
     </section>

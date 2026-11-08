@@ -1,53 +1,30 @@
 import React from 'react';
-import stackImage from '../assets/about/yash-avatar.png';
 import { usePortfolio } from '../context/PortfolioContext';
-
-// Technology Badges with crisp SVG styling tailored for Yash
-const PythonIcon = () => (
-  <div className="flex flex-col items-center gap-2 group">
-    <div className="w-16 h-16 md:w-20 md:h-20 bg-[#08233a] border-2 border-[#38bdf8] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)] group-hover:scale-110 transition-transform duration-300">
-      <span className="text-[#38bdf8] text-2xl md:text-3xl font-black font-mono select-none">Py</span>
-    </div>
-    <span className="text-xs font-bold text-white/90 uppercase tracking-wider font-mono">Python</span>
-  </div>
-);
-
-const LogicIcon = () => (
-  <div className="flex flex-col items-center gap-2 group">
-    <div className="w-16 h-16 md:w-20 md:h-20 bg-[#252000] border-2 border-[#f7df1e] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(247,223,30,0.3)] group-hover:scale-110 transition-transform duration-300">
-      <span className="text-[#f7df1e] text-2xl md:text-3xl font-black font-mono select-none">&lt;/&gt;</span>
-    </div>
-    <span className="text-xs font-bold text-white/90 uppercase tracking-wider font-mono">Logic &amp; CS</span>
-  </div>
-);
-
-const WebIcon = () => (
-  <div className="flex flex-col items-center gap-2 group">
-    <div className="w-16 h-16 md:w-20 md:h-20 bg-[#2b0c03] border-2 border-[#e34f26] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(227,79,38,0.3)] group-hover:scale-110 transition-transform duration-300">
-      <span className="text-[#e34f26] text-xl md:text-2xl font-black font-mono select-none">Web</span>
-    </div>
-    <span className="text-xs font-bold text-white/90 uppercase tracking-wider font-mono">HTML / CSS</span>
-  </div>
-);
-
-const DataIcon = () => (
-  <div className="flex flex-col items-center gap-2 group">
-    <div className="w-16 h-16 md:w-20 md:h-20 bg-[#001c2b] border-2 border-[#00d8ff] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(0,216,255,0.3)] group-hover:scale-110 transition-transform duration-300">
-      <span className="text-[#00d8ff] text-2xl md:text-3xl font-black font-mono select-none">AI+DS</span>
-    </div>
-    <span className="text-xs font-bold text-white/90 uppercase tracking-wider font-mono">Data Science</span>
-  </div>
-);
+import { hasContent, contentItems } from '../utils/content';
 
 const About = () => {
   const { aboutContent, personalInfo } = usePortfolio();
+  const facts = contentItems(aboutContent?.facts).filter((fact) => hasContent(fact.label) && hasContent(fact.value));
+  const techItems = contentItems(aboutContent?.techStack).filter((item) => hasContent(item.name) || hasContent(item.tag) || hasContent(item.shortName));
+  // Older localStorage entries may not contain the newly added Python badge label.
+  // Fall back only when the field is missing; an explicitly cleared value stays hidden.
+  const getTechIcon = (item) => {
+    if (item.shortName !== undefined && item.shortName !== null) return item.shortName;
+    const name = String(item.name || '').trim().toLowerCase();
+    if (name === 'python') return 'Py';
+    if (name === 'logic & cs') return '</>';
+    if (name === 'html / css') return 'Web';
+    if (name === 'data science') return 'AI+DS';
+    return '';
+  };
+  const showProfileBadge = [aboutContent?.imageUrl, personalInfo?.name, personalInfo?.shortTitle, personalInfo?.university].some(hasContent);
 
   return (
     <section id="about" className="bg-[#f50604] pt-28 md:pt-24 pb-44 px-6 md:px-12 w-full relative overflow-hidden font-sans">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-16 items-start">
         
         {/* Left Side: ID Badge with Swinging Drop-Bounce Animation */}
-        <div className="flex flex-col items-center w-full md:w-[350px] shrink-0 mt-8 md:mt-0">
+        {showProfileBadge && <div className="flex flex-col items-center w-full md:w-[350px] shrink-0 mt-8 md:mt-0">
           <div data-aos="drop-bounce" className="relative flex justify-center w-full">
             {/* Lanyard strap */}
             <div className="absolute -top-24 md:-top-36 left-1/2 w-2.5 md:w-3.5 h-28 md:h-44 bg-black transform -translate-x-1/2 shadow-inner z-0"></div>
@@ -61,77 +38,56 @@ const About = () => {
                 <div className="w-6 h-1.5 bg-black/40 rounded-full shadow-inner"></div>
               </div>
               {/* Image Container */}
-              <div className="w-full aspect-[3/4] overflow-hidden rounded-xl bg-gray-900 border border-white/10">
+              {hasContent(aboutContent?.imageUrl) && <div className="w-full aspect-[3/4] overflow-hidden rounded-xl bg-gray-900 border border-white/10">
                 <img
-                  src={stackImage}
-                  alt="Yash Tiwari — AI & Data Science Student"
+                  src={aboutContent.imageUrl}
+                  alt={aboutContent.imageAlt || ''}
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500"
                 />
-              </div>
+              </div>}
 
               {/* Badge Bottom Metadata */}
               <div className="mt-3 text-center">
-                <div className="text-white text-xs font-bold uppercase tracking-wider font-mono">
-                  {personalInfo.name}
-                </div>
-                <div className="text-red-400 text-[10px] font-mono mt-0.5">
-                  {personalInfo.shortTitle || "AI & Data Science"} · {personalInfo.university.split(',')[0]}
-                </div>
+                {hasContent(personalInfo?.name) && <div className="text-white text-xs font-bold uppercase tracking-wider font-mono">{personalInfo.name}</div>}
+                {(hasContent(personalInfo?.shortTitle) || hasContent(personalInfo?.university)) && <div className="text-red-400 text-[10px] font-mono mt-0.5">{[personalInfo?.shortTitle, personalInfo?.university?.split(',')[0]].filter(hasContent).join(' · ')}</div>}
               </div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* Right Side: Info Content */}
         <div data-aos="fade-left" data-aos-delay="200" className="flex-1 text-white mt-8 md:mt-0 relative z-20">
           
-          <div className="inline-block px-3.5 py-1 rounded-full bg-black/30 border border-white/20 text-xs uppercase tracking-widest font-mono font-bold mb-4">
-            About {personalInfo.firstName}
-          </div>
+          {hasContent(aboutContent?.badgeLabel) || hasContent(personalInfo?.firstName) ? <div className="inline-block px-3.5 py-1 rounded-full bg-black/30 border border-white/20 text-xs uppercase tracking-widest font-mono font-bold mb-4">{[aboutContent?.badgeLabel, personalInfo?.firstName].filter(hasContent).join(' ')}</div> : null}
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight font-heading">
-            {aboutContent.heading}
-            <span className="block font-cursive text-black text-3xl md:text-5xl font-normal tracking-normal mt-1">
-              curiosity meets discipline.
-            </span>
-          </h2>
+          {(hasContent(aboutContent?.heading) || hasContent(aboutContent?.accentLine)) && <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight font-heading">
+            {hasContent(aboutContent?.heading) && aboutContent.heading}
+            {hasContent(aboutContent?.accentLine) && <span className="block font-cursive text-black text-3xl md:text-5xl font-normal tracking-normal mt-1">{aboutContent.accentLine}</span>}
+          </h2>}
 
-          <p
-            className="text-base md:text-lg font-medium mb-10 leading-relaxed max-w-3xl text-red-50/95"
-            dangerouslySetInnerHTML={{ __html: aboutContent.bio }}
-          />
+          {hasContent(aboutContent?.bio) && <p className="text-base md:text-lg font-medium mb-10 leading-relaxed max-w-3xl text-red-50/95" dangerouslySetInnerHTML={{ __html: aboutContent.bio }} />}
+
+          {/* Editable profile details: rendered only when a value is provided */}
+          {(hasContent(aboutContent?.title) || hasContent(aboutContent?.openTo)) && <div className="max-w-3xl mb-8 flex flex-col gap-2 text-sm md:text-base">
+            {hasContent(aboutContent?.title) && <p className="text-red-50/95"><span className="font-bold text-white">Title: </span>{aboutContent.title}</p>}
+            {hasContent(aboutContent?.openTo) && <p className="text-red-50/95"><span className="font-bold text-white">Open To: </span>{aboutContent.openTo}</p>}
+          </div>}
 
           {/* Quick Metrics Tagline */}
-          <div className="p-4 rounded-xl bg-black/20 border border-white/15 max-w-2xl mb-8 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
-            <div>
-              <span className="text-white font-bold block text-sm">University &amp; Term</span>
-              <span className="text-white/80">{personalInfo.university} · {personalInfo.semester}</span>
-            </div>
-            <div>
-              <span className="text-white font-bold block text-sm">Degree Program</span>
-              <span className="text-white/80">B.Tech in AI &amp; Data Science</span>
-            </div>
-            <div>
-              <span className="text-white font-bold block text-sm">High School Record</span>
-              <span className="text-white/80">88% (12th) · 91% (10th)</span>
-            </div>
-          </div>
+          {facts.length > 0 && <div className="p-4 rounded-xl bg-black/20 border border-white/15 max-w-2xl mb-8 flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+            {facts.map((fact, index) => <div key={`${fact.label}-${index}`}><span className="text-white font-bold block text-sm">{fact.label}</span><span className="text-white/80">{fact.value}</span></div>)}
+          </div>}
 
-          {/* Horizontal Skills Badges Row */}
-          <div className="flex flex-wrap items-center gap-6 md:gap-8 mt-6">
-            <div data-aos="zoom-in" data-aos-delay="300" className="hover:scale-110 transition-transform duration-300 cursor-pointer drop-shadow-2xl">
-              <PythonIcon />
-            </div>
-            <div data-aos="zoom-in" data-aos-delay="400" className="hover:scale-110 transition-transform duration-300 cursor-pointer drop-shadow-2xl">
-              <LogicIcon />
-            </div>
-            <div data-aos="zoom-in" data-aos-delay="500" className="hover:scale-110 transition-transform duration-300 cursor-pointer drop-shadow-2xl">
-              <WebIcon />
-            </div>
-            <div data-aos="zoom-in" data-aos-delay="600" className="hover:scale-110 transition-transform duration-300 cursor-pointer drop-shadow-2xl">
-              <DataIcon />
-            </div>
-          </div>
+          {/* Editable technology and focus badges */}
+          {techItems.length > 0 && <div className="flex flex-wrap items-center gap-6 md:gap-8 mt-6">
+            {techItems.map((item, index) => <div key={`${item.name || item.tag}-${index}`} data-aos="zoom-in" data-aos-delay={300 + index * 100} className="flex flex-col items-center gap-2 group">
+              {hasContent(getTechIcon(item)) && <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border-2 flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.15)] group-hover:scale-110 transition-transform duration-300 px-2" style={{ backgroundColor: item.bg || '#252000', borderColor: item.color || '#f50604' }}>
+                <span className="text-xl md:text-2xl font-black font-mono select-none text-center" style={{ color: item.color || '#ffffff' }}>{getTechIcon(item)}</span>
+              </div>}
+              {hasContent(item.name) && <span className="text-xs font-bold text-white/90 uppercase tracking-wider font-mono text-center">{item.name}</span>}
+              {hasContent(item.tag) && <span className="text-[10px] font-mono text-white/60 text-center">{item.tag}</span>}
+            </div>)}
+          </div>}
 
         </div>
       </div>

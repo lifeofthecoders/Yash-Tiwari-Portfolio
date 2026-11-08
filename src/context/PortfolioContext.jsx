@@ -3,106 +3,152 @@ import * as initialData from '../data/portfolioData';
 
 const PortfolioContext = createContext(null);
 
-const STORAGE_KEY = 'yash_portfolio_data_v1';
+const STORAGE_KEY = 'yash_portfolio_data_v2';
+const LEGACY_STORAGE_KEY = 'yash_portfolio_data_v1';
 const AUTH_KEY = 'yash_admin_authenticated';
 
-// Static authentication credentials
+// Static client-side credentials are retained for backwards compatibility only.
+// They are not secure for a public production admin system; use server auth before storing sensitive data.
 export const ADMIN_CREDENTIALS = {
   username: 'admin',
   password: 'yash@admin2026',
 };
 
-export const PortfolioProvider = ({ children }) => {
-  // Load saved state from localStorage or fallback to initial portfolioData
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Failed to load portfolio data from localStorage:', e);
-    }
-    return {
-      personalInfo: initialData.personalInfo,
-      heroContent: initialData.heroContent,
-      statsData: initialData.statsData,
-      aboutContent: initialData.aboutContent,
-      skillsContent: initialData.skillsContent,
-      technicalSkills: initialData.technicalSkills,
-      softSkillsList: initialData.softSkillsList,
-      projects: initialData.projects,
-      educationData: initialData.educationData,
-      certificatesData: initialData.certificatesData,
-      footerContent: initialData.footerContent,
-      socialLinks: initialData.socialLinks,
-    };
-  });
+export const CONTENT_KEYS = [
+  'siteMeta',
+  'personalInfo',
+  'socialLinks',
+  'navigationContent',
+  'heroContent',
+  'statsData',
+  'aboutContent',
+  'skillsContent',
+  'technicalSkills',
+  'softSkillsContent',
+  'softSkillsList',
+  'projectsContent',
+  'projects',
+  'educationContent',
+  'educationData',
+  'certificatesData',
+  'contactContent',
+  'footerContent',
+  'emailjsConfig',
+];
 
-  // Admin Modal & Authentication State
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
+const buildDefaults = () => Object.fromEntries(
+  CONTENT_KEYS.filter((key) => initialData[key] !== undefined).map((key) => [key, initialData[key]])
+);
+
+const mergeDefaults = (defaults, saved) => {
+  if (Array.isArray(defaults)) return Array.isArray(saved) ? saved : defaults;
+  if (defaults && typeof defaults === 'object') {
+    const source = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    const merged = Object.fromEntries(
+      Object.entries(defaults).map(([key, value]) => [key, mergeDefaults(value, source[key])])
+    );
+    // Preserve administrator-added custom fields that do not exist in the starter schema.
+    Object.entries(source).forEach(([key, value]) => {
+      if (!Object.prototype.hasOwnProperty.call(defaults, key)) merged[key] = value;
+    });
+    return merged;
+  }
+  return saved === undefined ? defaults : saved;
+};
+
+const loadInitialData = () => {
+  const defaults = buildDefaults();
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+    return saved ? mergeDefaults(defaults, JSON.parse(saved)) : defaults;
+  } catch (error) {
+    console.error('Failed to load portfolio data from localStorage:', error);
+    return defaults;
+  }
+};
+
+export const PortfolioProvider = ({ children }) => {
+  const [data, setData] = useState(loadInitialData);
+  const [isAdminOpen, setIsAdminOpen] = useState(() => window.location.hash === '#admin');
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem(AUTH_KEY) === 'true';
   });
 
-  // Check URL hash (#admin) on load and listen for hash changes
   useEffect(() => {
     const handleHash = () => {
-      if (window.location.hash === '#admin') {
-        setIsAdminOpen(true);
-      }
+      if (window.location.hash === '#admin') setIsAdminOpen(true);
     };
     handleHash();
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // Keyboard shortcut: Ctrl + Shift + A to open Admin Panel
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
-        e.preventDefault();
-        setIsAdminOpen((prev) => !prev);
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        setIsAdminOpen((previous) => !previous);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Save changes to state & localStorage
+  useEffect(() => {
+    const meta = data.siteMeta || {};
+    const setMeta = (selector, attribute, value, content) => {
+      let element = document.head.querySelector(selector);
+      if (!element && content) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, value);
+        document.head.appendChild(element);
+      }
+      if (element) {
+        if (content) element.setAttribute('content', content);
+        else element.removeAttribute('content');
+      }
+    };
+
+    if (meta.title?.trim()) document.title = meta.title.trim();
+    else if (meta.title === '') document.title = '';
+    setMeta('meta[name="description"]', 'name', 'description', meta.description || '');
+    setMeta('meta[name="keywords"]', 'name', 'keywords', meta.keywords || '');
+    setMeta('meta[name="theme-color"]', 'name', 'theme-color', meta.themeColor || '');
+    setMeta('meta[property="og:title"]', 'property', 'og:title', meta.ogTitle || '');
+    setMeta('meta[property="og:description"]', 'property', 'og:description', meta.ogDescription || '');
+    setMeta('meta[property="og:image"]', 'property', 'og:image', meta.ogImageUrl || '');
+    let favicon = document.head.querySelector('link[rel="icon"]');
+    if (meta.faviconUrl) {
+      if (!favicon) {
+        favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        document.head.appendChild(favicon);
+      }
+      favicon.href = meta.faviconUrl;
+    } else if (favicon) {
+      favicon.removeAttribute('href');
+    }
+  }, [data.siteMeta]);
+
   const updateData = (updater) => {
-    setData((prev) => {
-      const updated = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
+    setData((previous) => {
+      const updated = typeof updater === 'function' ? updater(previous) : { ...previous, ...updater };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save to localStorage:', e);
+      } catch (error) {
+        console.error('Failed to save portfolio data:', error);
       }
       return updated;
     });
   };
 
-  // Reset to original default portfolioData
   const resetToDefaults = () => {
-    const defaults = {
-      personalInfo: initialData.personalInfo,
-      heroContent: initialData.heroContent,
-      statsData: initialData.statsData,
-      aboutContent: initialData.aboutContent,
-      skillsContent: initialData.skillsContent,
-      technicalSkills: initialData.technicalSkills,
-      softSkillsList: initialData.softSkillsList,
-      projects: initialData.projects,
-      educationData: initialData.educationData,
-      certificatesData: initialData.certificatesData,
-      footerContent: initialData.footerContent,
-      socialLinks: initialData.socialLinks,
-    };
+    const defaults = buildDefaults();
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     setData(defaults);
   };
 
-  // Admin login handler
   const login = (username, password) => {
     if (username.trim() === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
       setIsAuthenticated(true);
@@ -112,31 +158,28 @@ export const PortfolioProvider = ({ children }) => {
     return { success: false, message: 'Invalid username or password' };
   };
 
-  // Admin logout handler
   const logout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem(AUTH_KEY);
   };
 
-  // Export current configuration as JSON download
   const exportBackup = () => {
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', jsonString);
-    downloadAnchor.setAttribute('download', `yash_portfolio_backup_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const jsonString = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
+    const anchor = document.createElement('a');
+    anchor.setAttribute('href', jsonString);
+    anchor.setAttribute('download', `portfolio-content-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
   };
 
-  // Import JSON backup
   const importBackup = (jsonString) => {
     try {
       const parsed = JSON.parse(jsonString);
-      updateData(parsed);
+      updateData((previous) => mergeDefaults(previous, parsed));
       return true;
-    } catch (e) {
-      console.error('Failed to import backup:', e);
+    } catch (error) {
+      console.error('Failed to import backup:', error);
       return false;
     }
   };
@@ -155,7 +198,7 @@ export const PortfolioProvider = ({ children }) => {
         closeAdmin: () => {
           setIsAdminOpen(false);
           if (window.location.hash === '#admin') {
-            history.replaceState(null, '', ' ');
+            history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
           }
         },
         isAuthenticated,
@@ -170,8 +213,6 @@ export const PortfolioProvider = ({ children }) => {
 
 export const usePortfolio = () => {
   const context = useContext(PortfolioContext);
-  if (!context) {
-    throw new Error('usePortfolio must be used within a PortfolioProvider');
-  }
+  if (!context) throw new Error('usePortfolio must be used within a PortfolioProvider');
   return context;
 };

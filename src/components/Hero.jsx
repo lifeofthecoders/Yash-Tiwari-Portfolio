@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import heroVideo from '../assets/hero video/yash-hero.mp4';
-import posterImage from '../assets/about/yash-avatar.png';
 import { usePortfolio } from '../context/PortfolioContext';
+import { hasContent, contentItems, additionalTextFields } from '../utils/content';
+import EditableExtras from './EditableExtras';
 
 const Hero = () => {
   const { heroContent, personalInfo, statsData } = usePortfolio();
+  const visibleStats = contentItems(statsData).filter((stat) => hasContent(stat.num) || hasContent(stat.label) || hasContent(stat.desc) || additionalTextFields(stat, ['num', 'label', 'desc']).length > 0);
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -49,38 +50,36 @@ const Hero = () => {
         muted={isMuted}
         playsInline
         preload="auto"
-        poster={posterImage}
+        poster={heroContent.posterUrl || undefined}
         className="absolute top-0 left-0 w-full h-full object-cover object-center z-0 opacity-0 transition-opacity duration-1000"
         onLoadedData={(e) => e.target.classList.remove('opacity-0')}
       >
-        <source src={heroVideo} type="video/mp4" />
-        Your browser does not support the video tag.
+        {hasContent(heroContent.videoUrl) && <source src={heroContent.videoUrl} type="video/mp4" />}
+        {hasContent(heroContent?.videoFallbackText) ? heroContent.videoFallbackText : null}
       </video>
 
       {/* Subtle overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent z-10 pointer-events-none" />
 
       {/* Left Floating Contact Bar for Large Screens */}
-      <div className="hidden lg:flex flex-col gap-5 fixed left-6 top-1/2 -translate-y-1/2 z-40 mix-blend-difference">
-        <a
-          href={`mailto:${personalInfo.emails.primary}`}
+      {(hasContent(personalInfo?.emails?.primary) || hasContent(personalInfo?.phone)) && <div className="hidden lg:flex flex-col gap-5 fixed left-6 top-1/2 -translate-y-1/2 z-40 mix-blend-difference">
+        {hasContent(personalInfo?.emails?.primary) && <a href={`mailto:${personalInfo.emails.primary}`}
           className="text-white/70 hover:text-[#f50604] transition-all duration-300 transform hover:scale-125"
-          aria-label="Email Yash"
+          aria-label={heroContent.emailAriaLabel || undefined}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-        </a>
-        <a
-          href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`}
+        </a>}
+        {hasContent(personalInfo?.phone) && <a href={`tel:${personalInfo.phone.replace(/\s+/g, '')}`}
           className="text-white/70 hover:text-[#f50604] transition-all duration-300 transform hover:scale-125"
-          aria-label="Call Yash"
+          aria-label={heroContent.phoneAriaLabel || undefined}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
           </svg>
-        </a>
-      </div>
+        </a>}
+      </div>}
 
       {/* Content Container */}
       <div className="relative z-20 px-6 pt-32 pb-20 md:pb-[6%] md:px-12 lg:px-20 w-full flex flex-col md:flex-row justify-end md:justify-between items-start md:items-end text-left">
@@ -88,102 +87,68 @@ const Hero = () => {
         <div className="flex flex-col items-start text-left max-w-2xl lg:max-w-3xl w-full">
 
           {/* Academic Badge */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="100"
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 border border-red-500/40 backdrop-blur-md text-[11px] font-mono text-white/90 uppercase tracking-widest mb-4 shadow-lg"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#f50604] animate-ping" />
-            <span>{personalInfo.university.toUpperCase()} · {personalInfo.semester.toUpperCase()}</span>
-          </div>
+          {hasContent(personalInfo?.university) || hasContent(personalInfo?.semester) ? (
+            <div data-aos="fade-up" data-aos-delay="100" className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 border border-red-500/40 backdrop-blur-md text-[11px] font-mono text-white/90 uppercase tracking-widest mb-4 shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-[#f50604] animate-ping" />
+              <span>{[personalInfo?.university, personalInfo?.semester].filter(hasContent).join(' · ').toUpperCase()}</span>
+            </div>
+          ) : null}
 
           {/* Mobile inline contacts */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="150"
-            className="flex items-center gap-4 mb-4 lg:hidden"
-          >
-            <a
-              href={`mailto:${personalInfo.emails.primary}`}
-              className="text-white/80 hover:text-[#f50604] flex items-center gap-2 text-xs font-mono"
-              aria-label="Email"
-            >
+          {hasContent(personalInfo?.emails?.primary) && <div data-aos="fade-up" data-aos-delay="150" className="flex items-center gap-4 mb-4 lg:hidden">
+            <a href={`mailto:${personalInfo.emails.primary}`} className="text-white/80 hover:text-[#f50604] flex items-center gap-2 text-xs font-mono" aria-label={heroContent?.emailAriaLabel || undefined}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <span>{personalInfo.emails.primary}</span>
             </a>
-          </div>
+          </div>}
 
           {/* Main Heading */}
-          <h1
-            data-aos="fade-up"
-            data-aos-delay="200"
-            className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 tracking-tight font-heading leading-tight drop-shadow-md"
-          >
-            {heroContent.greeting}, <br />
-            <span className="font-editorial text-white font-normal tracking-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl mr-2">
-              I build
-            </span>
-            <span className="text-[#f50604]">
-              digital intelligence.
-            </span>
-          </h1>
+          {(hasContent(heroContent?.greeting) || hasContent(heroContent?.headingPrefix) || hasContent(heroContent?.headingAccent)) && <h1 data-aos="fade-up" data-aos-delay="200" className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 tracking-tight font-heading leading-tight drop-shadow-md">
+            {hasContent(heroContent?.greeting) && <>{heroContent.greeting}<br /></>}
+            {hasContent(heroContent?.headingPrefix) && <span className="font-editorial text-white font-normal tracking-normal text-3xl sm:text-4xl md:text-5xl lg:text-6xl mr-2">{heroContent.headingPrefix}</span>}
+            {hasContent(heroContent?.headingAccent) && <span className="text-[#f50604]">{heroContent.headingAccent}</span>}
+          </h1>}
 
           {/* Subtitle */}
-          <p
-            data-aos="fade-up"
-            data-aos-delay="300"
-            className="text-white/90 text-sm sm:text-base md:text-lg font-normal mb-6 max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
-          >
-            {heroContent.subtitle}
-          </p>
+          {hasContent(heroContent?.subtitle) && <p data-aos="fade-up" data-aos-delay="300" className="text-white/90 text-sm sm:text-base md:text-lg font-normal mb-6 max-w-xl leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">{heroContent.subtitle}</p>}
+          <EditableExtras data={heroContent} knownKeys={['greeting', 'subtitle', 'ctaPrimary', 'ctaSecondary', 'ctaResume', 'headingPrefix', 'headingAccent', 'emailAriaLabel', 'phoneAriaLabel', 'audioToggleAriaLabel', 'playVideoLabel', 'pauseVideoLabel', 'unmuteLabel', 'muteLabel', 'videoUrl', 'posterUrl', 'videoFallbackText']} className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-white/70 font-mono mb-5" labelClassName="text-white font-bold" />
 
           {/* Floating Fact Cards */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="350"
-            className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full max-w-xl mb-7"
-          >
-            {statsData.map((stat, i) => (
+          {visibleStats.length > 0 && <div data-aos="fade-up" data-aos-delay="350" className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 w-full max-w-xl mb-7">
+            {visibleStats.map((stat, i) => (
               <div
                 key={i}
                 className="bg-black/60 border border-white/15 backdrop-blur-md rounded-2xl p-3 flex flex-col justify-center hover:border-[#f50604]/50 transition-all duration-300"
               >
-                <span className="text-xl sm:text-2xl font-black text-[#f50604] font-heading leading-tight">
-                  {stat.num}
-                </span>
-                <span className="text-white text-[11px] font-bold tracking-wide mt-0.5">
-                  {stat.label}
-                </span>
-                <span className="text-white/50 text-[9px] font-mono leading-tight">
-                  {stat.desc}
-                </span>
+                {hasContent(stat.num) && <span className="text-xl sm:text-2xl font-black text-[#f50604] font-heading leading-tight">{stat.num}</span>}
+                {hasContent(stat.label) && <span className="text-white text-[11px] font-bold tracking-wide mt-0.5">{stat.label}</span>}
+                {hasContent(stat.desc) && <span className="text-white/50 text-[9px] font-mono leading-tight">{stat.desc}</span>}
+                <EditableExtras data={stat} knownKeys={['num', 'label', 'desc']} className="flex flex-col gap-1 mt-1 text-[9px] font-mono text-white/60" labelClassName="text-white/80" />
               </div>
             ))}
-          </div>
+          </div>}
 
           {/* CTA Buttons */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="400"
-            className="flex flex-row flex-wrap items-center gap-3 w-full"
-          >
-            <a
+          {(hasContent(heroContent?.ctaPrimary?.text) && hasContent(heroContent?.ctaPrimary?.href)) || (hasContent(heroContent?.ctaSecondary?.text) && hasContent(heroContent?.ctaSecondary?.href)) || (hasContent(heroContent?.ctaResume?.text) && hasContent(heroContent?.ctaResume?.href)) ? <div data-aos="fade-up" data-aos-delay="400" className="flex flex-row flex-wrap items-center gap-3 w-full">
+            {hasContent(heroContent?.ctaPrimary?.text) && hasContent(heroContent?.ctaPrimary?.href) && <a
               href={heroContent.ctaPrimary.href}
               className="px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm rounded-full bg-[#f50604] text-white font-bold hover:bg-[#eb0803] transition-all duration-300 transform hover:scale-105 shadow-[0_0_25px_rgba(245,6,4,0.5)] uppercase tracking-wider font-mono"
             >
               {heroContent.ctaPrimary.text}
-            </a>
+            </a>}
+            <EditableExtras data={heroContent?.ctaPrimary} knownKeys={['text', 'href']} className="text-[9px] text-white/60 font-mono" />
 
-            <a
+            {hasContent(heroContent?.ctaSecondary?.text) && hasContent(heroContent?.ctaSecondary?.href) && <a
               href={heroContent.ctaSecondary.href}
               className="px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm rounded-full bg-black/50 border border-white/30 text-white font-semibold hover:bg-white hover:text-black transition-all duration-300 backdrop-blur-md uppercase tracking-wider font-mono"
             >
               {heroContent.ctaSecondary.text}
-            </a>
+            </a>}
+            <EditableExtras data={heroContent?.ctaSecondary} knownKeys={['text', 'href']} className="text-[9px] text-white/60 font-mono" />
 
-            <a
+            {hasContent(heroContent?.ctaResume?.text) && hasContent(heroContent?.ctaResume?.href) && <a
               href={heroContent.ctaResume.href}
               download
               className="px-5 py-2.5 md:px-6 md:py-3 text-xs md:text-sm rounded-full bg-transparent border border-white/40 text-white font-semibold hover:bg-white hover:text-black transition-all duration-300 backdrop-blur-md flex items-center gap-2 font-mono"
@@ -192,16 +157,13 @@ const Hero = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               {heroContent.ctaResume.text}
-            </a>
-          </div>
+            </a>}
+            <EditableExtras data={heroContent?.ctaResume} knownKeys={['text', 'href']} className="text-[9px] text-white/60 font-mono" />
+          </div> : null}
         </div>
 
         {/* Right Side: Play Video & Sound Controls */}
-        <div
-          data-aos="zoom-in"
-          data-aos-delay="600"
-          className="mt-8 md:mt-0 flex flex-row md:flex-col items-center gap-3 cursor-pointer group self-start md:self-auto"
-        >
+        {hasContent(heroContent?.videoUrl) && <div data-aos="zoom-in" data-aos-delay="600" className="mt-8 md:mt-0 flex flex-row md:flex-col items-center gap-3 cursor-pointer group self-start md:self-auto">
           <div
             onClick={toggleVideo}
             className="w-14 h-14 md:w-20 md:h-20 rounded-full border border-white/30 bg-black/50 backdrop-blur-md flex justify-center items-center group-hover:scale-110 group-hover:bg-[#f50604] transition-all duration-500 shadow-[0_0_30px_rgba(245,6,4,0.3)] group-hover:shadow-[0_0_40px_rgba(245,6,4,0.8)]"
@@ -218,14 +180,14 @@ const Hero = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-white text-[10px] md:text-xs font-bold tracking-widest uppercase opacity-80 group-hover:opacity-100 transition-opacity font-mono">
-              {!isPlaying ? "Play Video" : "Pause"}
-            </span>
+            {hasContent(isPlaying ? heroContent.pauseVideoLabel : heroContent.playVideoLabel) && <span className="text-white text-[10px] md:text-xs font-bold tracking-widest uppercase opacity-80 group-hover:opacity-100 transition-opacity font-mono">
+              {!isPlaying ? heroContent.playVideoLabel : heroContent.pauseVideoLabel}
+            </span>}
             <button
               onClick={toggleAudio}
               className="p-1 rounded-full bg-white/10 hover:bg-white/30 text-white transition-colors"
-              title={isMuted ? "Unmute Audio" : "Mute Audio"}
-              aria-label="Toggle Audio"
+              title={isMuted ? heroContent.unmuteLabel : heroContent.muteLabel}
+              aria-label={heroContent.audioToggleAriaLabel || undefined}
             >
               {isMuted ? (
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -238,7 +200,7 @@ const Hero = () => {
               )}
             </button>
           </div>
-        </div>
+        </div>}
       </div>
 
       {/* Scroll Indicator */}
