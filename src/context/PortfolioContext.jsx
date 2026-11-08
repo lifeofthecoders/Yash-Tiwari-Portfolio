@@ -68,8 +68,8 @@ const mergeDefaults = (defaults, saved) => {
   if (defaults && typeof defaults === 'object') {
     const source =
       saved &&
-      typeof saved === 'object' &&
-      !Array.isArray(saved)
+        typeof saved === 'object' &&
+        !Array.isArray(saved)
         ? saved
         : {};
 
@@ -179,10 +179,50 @@ export const PortfolioProvider = ({ children }) => {
           getAdminUrl()
         );
       }
+
+      // Reset the browser scroll immediately.
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant',
+      });
     }
 
-    ;
+    setIsAdminOpen(true);
+
+    // Reset again after the Admin Panel starts rendering.
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+    });
   };
+
+  // Always open the full-page Admin Panel at the top.
+  useEffect(() => {
+    if (!isAdminOpen) return;
+
+    const scrollToTop = () => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'instant',
+      });
+
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    scrollToTop();
+
+    const firstFrame = requestAnimationFrame(() => {
+      scrollToTop();
+
+      requestAnimationFrame(scrollToTop);
+    });
+
+    return () => {
+      cancelAnimationFrame(firstFrame);
+    };
+  }, [isAdminOpen]);
 
   // ------------------------------------------------
   // CLOSE ADMIN PANEL
@@ -405,9 +445,9 @@ export const PortfolioProvider = ({ children }) => {
         typeof updater === 'function'
           ? updater(previous)
           : {
-              ...previous,
-              ...updater,
-            };
+            ...previous,
+            ...updater,
+          };
 
       try {
         localStorage.setItem(
