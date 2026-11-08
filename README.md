@@ -117,7 +117,7 @@ yash-tiwari-portfolio/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/lifeofthecoders/yash-tiwari-portfolio.git
+git clone https://github.com/lifeofthecoders/Yash-Tiwari-Portfolio.git
 ```
 
 ### 2. Navigate into the project
@@ -288,7 +288,7 @@ No ownership of third-party trademarks, packages, or client-provided personal ma
 - **Project:** Yash Tiwari — Premium Portfolio
 - **Client:** Yash Tiwari
 - **Developer and owner of custom project implementation:** Sumit Panchal
-- **GitHub repository:** https://github.com/lifeofthecoders/yash-tiwari-portfolio
+- **GitHub repository:** https://github.com/lifeofthecoders/Yash-Tiwari-Portfolio
 - **Vercel deployment:** https://yash-tiwari-portfolio.vercel.app/
 
 For project implementation, maintenance, or collaboration enquiries, contact the developer through the contact details maintained by the repository owner.
