@@ -18,7 +18,7 @@ export const siteMeta = {
 export const personalInfo = {
   name: "Yash Tiwari",
   firstName: "Yash",
-  brandName: "Yash",
+  brandName: "Yash Tiwari",
   brandSuffix: ".",
   title: "B.Tech AI & Data Science Student | Aspiring Software Developer",
   shortTitle: "AI & Data Science Student",
