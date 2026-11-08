@@ -1,78 +1,30 @@
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from 'react';
-
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as initialData from '../data/portfolioData';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 
 const PortfolioContext = createContext(null);
-
-const STORAGE_KEY = 'yash_portfolio_data_v2';
-const LEGACY_STORAGE_KEY = 'yash_portfolio_data_v1';
-const AUTH_KEY = 'yash_admin_authenticated';
-
-// IMPORTANT:
-// These credentials are currently frontend-side credentials.
-// Replace the values with your new credentials before deployment.
-// For real production security, use server-side authentication.
-export const ADMIN_CREDENTIALS = {
-  username: 'Admin',
-  password: 'Yashtiwari@Admin2026',
-};
+const CONTENT_ROW_ID = 'main';
 
 export const CONTENT_KEYS = [
-  'siteMeta',
-  'personalInfo',
-  'socialLinks',
-  'navigationContent',
-  'heroContent',
-  'statsData',
-  'aboutContent',
-  'skillsContent',
-  'technicalSkills',
-  'softSkillsContent',
-  'softSkillsList',
-  'projectsContent',
-  'projects',
-  'educationContent',
-  'educationData',
-  'certificatesData',
-  'contactContent',
-  'footerContent',
-  'emailjsConfig',
+  'siteMeta', 'personalInfo', 'socialLinks', 'navigationContent', 'heroContent',
+  'statsData', 'aboutContent', 'skillsContent', 'technicalSkills',
+  'softSkillsContent', 'softSkillsList', 'projectsContent', 'projects',
+  'educationContent', 'educationData', 'certificatesData', 'contactContent',
+  'footerContent', 'emailjsConfig',
 ];
 
-// --------------------------------------------------
-// DEFAULT DATA
-// --------------------------------------------------
-
-const buildDefaults = () =>
-  Object.fromEntries(
-    CONTENT_KEYS
-      .filter((key) => initialData[key] !== undefined)
-      .map((key) => [key, initialData[key]])
-  );
-
-// --------------------------------------------------
-// MERGE SAVED DATA WITH DEFAULT DATA
-// --------------------------------------------------
+const buildDefaults = () => Object.fromEntries(
+  CONTENT_KEYS
+    .filter((key) => initialData[key] !== undefined)
+    .map((key) => [key, initialData[key]])
+);
 
 const mergeDefaults = (defaults, saved) => {
-  if (Array.isArray(defaults)) {
-    return Array.isArray(saved) ? saved : defaults;
-  }
+  if (Array.isArray(defaults)) return Array.isArray(saved) ? saved : defaults;
 
   if (defaults && typeof defaults === 'object') {
-    const source =
-      saved &&
-        typeof saved === 'object' &&
-        !Array.isArray(saved)
-        ? saved
-        : {};
-
+    const source = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
     const merged = Object.fromEntries(
       Object.entries(defaults).map(([key, value]) => [
         key,
@@ -80,7 +32,6 @@ const mergeDefaults = (defaults, saved) => {
       ])
     );
 
-    // Preserve administrator-created custom fields.
     Object.entries(source).forEach(([key, value]) => {
       if (!Object.prototype.hasOwnProperty.call(defaults, key)) {
         merged[key] = value;
@@ -93,114 +44,94 @@ const mergeDefaults = (defaults, saved) => {
   return saved === undefined ? defaults : saved;
 };
 
-// --------------------------------------------------
-// LOAD INITIAL PORTFOLIO DATA
-// --------------------------------------------------
+const isAdminRoute = () =>
+  typeof window !== 'undefined' &&
+  window.location.hash.toLowerCase() === '#admin';
 
-const loadInitialData = () => {
-  const defaults = buildDefaults();
+const getFrontendUrl = () =>
+  window.location.pathname + window.location.search;
 
-  try {
-    const saved =
-      localStorage.getItem(STORAGE_KEY) ||
-      localStorage.getItem(LEGACY_STORAGE_KEY);
-
-    return saved
-      ? mergeDefaults(defaults, JSON.parse(saved))
-      : defaults;
-  } catch (error) {
-    console.error(
-      'Failed to load portfolio data from localStorage:',
-      error
-    );
-
-    return defaults;
-  }
-};
-
-// --------------------------------------------------
-// ADMIN ROUTE HELPERS
-// --------------------------------------------------
-
-const isAdminRoute = () => {
-  if (typeof window === 'undefined') return false;
-
-  return window.location.hash.toLowerCase() === '#admin';
-};
-
-const getFrontendUrl = () => {
-  return (
-    window.location.pathname +
-    window.location.search
-  );
-};
-
-const getAdminUrl = () => {
-  return (
-    window.location.pathname +
-    window.location.search +
-    '#admin'
-  );
-};
-
-// --------------------------------------------------
-// PORTFOLIO PROVIDER
-// --------------------------------------------------
+const getAdminUrl = () =>
+  `${window.location.pathname}${window.location.search}#admin`;
 
 export const PortfolioProvider = ({ children }) => {
-  const [data, setData] = useState(loadInitialData);
+  const [data, setData] = useState(buildDefaults);
+  const [isAdminOpen, setIsAdminOpen] = useState(isAdminRoute);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
+  const [contentLoading, setContentLoading] = useState(true);
 
-  // Restore Admin Panel directly from the browser URL.
-  // This works after normal refresh and hard refresh.
-  const [isAdminOpen, setIsAdminOpen] = useState(
-    () => isAdminRoute()
-  );
-
-  // sessionStorage survives refreshes in the same browser tab.
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    try {
-      return sessionStorage.getItem(AUTH_KEY) === 'true';
-    } catch (error) {
-      console.error('Unable to restore admin session:', error);
-      return false;
-    }
-  });
-
-  // ------------------------------------------------
-  // OPEN ADMIN PANEL
-  // ------------------------------------------------
+  // --------------------------------------------------
+  // ADMIN ROUTING
+  // --------------------------------------------------
 
   const openAdmin = () => {
-    if (typeof window !== 'undefined') {
-      if (!isAdminRoute()) {
-        window.history.pushState(
-          { admin: true },
-          '',
-          getAdminUrl()
-        );
-      }
-
-      // Reset the browser scroll immediately.
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'instant',
-      });
+    if (!isAdminRoute()) {
+      window.history.pushState(
+        { admin: true },
+        '',
+        getAdminUrl()
+      );
     }
 
-    setIsAdminOpen(true);
-
-    // Reset again after the Admin Panel starts rendering.
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
     });
+
+    setIsAdminOpen(true);
   };
+
+  const closeAdmin = () => {
+    if (isAdminRoute()) {
+      window.history.replaceState(
+        { admin: false },
+        '',
+        getFrontendUrl()
+      );
+    }
+
+    setIsAdminOpen(false);
+  };
+
+  const setAdminOpen = (nextValue) => {
+    const next =
+      typeof nextValue === 'function'
+        ? nextValue(isAdminOpen)
+        : nextValue;
+
+    if (next) {
+      openAdmin();
+    } else {
+      closeAdmin();
+    }
+  };
+
+  useEffect(() => {
+    const syncRoute = () => {
+      setIsAdminOpen(isAdminRoute());
+    };
+
+    window.addEventListener('hashchange', syncRoute);
+    window.addEventListener('popstate', syncRoute);
+
+    syncRoute();
+
+    return () => {
+      window.removeEventListener('hashchange', syncRoute);
+      window.removeEventListener('popstate', syncRoute);
+    };
+  }, []);
 
   // Always open the full-page Admin Panel at the top.
   useEffect(() => {
-    if (!isAdminOpen) return;
+    if (!isAdminOpen) return undefined;
 
-    const scrollToTop = () => {
+    const scroll = () => {
       window.scrollTo({
         top: 0,
         left: 0,
@@ -211,132 +142,252 @@ export const PortfolioProvider = ({ children }) => {
       document.body.scrollTop = 0;
     };
 
-    scrollToTop();
+    scroll();
 
-    const firstFrame = requestAnimationFrame(() => {
-      scrollToTop();
-
-      requestAnimationFrame(scrollToTop);
+    const frame = requestAnimationFrame(() => {
+      scroll();
+      requestAnimationFrame(scroll);
     });
 
-    return () => {
-      cancelAnimationFrame(firstFrame);
-    };
+    return () => cancelAnimationFrame(frame);
   }, [isAdminOpen]);
-
-  // ------------------------------------------------
-  // CLOSE ADMIN PANEL
-  // ------------------------------------------------
-
-  const closeAdmin = () => {
-    if (typeof window !== 'undefined') {
-      if (isAdminRoute()) {
-        window.history.replaceState(
-          { admin: false },
-          '',
-          getFrontendUrl()
-        );
-      }
-    }
-
-    setIsAdminOpen(false);
-  };
-
-  // ------------------------------------------------
-  // ROUTE-AWARE ADMIN STATE
-  // ------------------------------------------------
-
-  // Supports existing components that call setIsAdminOpen().
-  // Every state change also synchronizes the URL.
-  const setAdminOpen = (nextValue) => {
-    const nextState =
-      typeof nextValue === 'function'
-        ? nextValue(isAdminOpen)
-        : nextValue;
-
-    if (nextState) {
-      openAdmin();
-    } else {
-      closeAdmin();
-    }
-  };
-
-  // ------------------------------------------------
-  // KEEP ADMIN ROUTE SYNCHRONIZED
-  // ------------------------------------------------
-
-  useEffect(() => {
-    const syncAdminRoute = () => {
-      setIsAdminOpen(isAdminRoute());
-    };
-
-    // Check URL on application initialization.
-    syncAdminRoute();
-
-    // Support normal hash navigation.
-    window.addEventListener(
-      'hashchange',
-      syncAdminRoute
-    );
-
-    // Support browser back and forward navigation.
-    window.addEventListener(
-      'popstate',
-      syncAdminRoute
-    );
-
-    return () => {
-      window.removeEventListener(
-        'hashchange',
-        syncAdminRoute
-      );
-
-      window.removeEventListener(
-        'popstate',
-        syncAdminRoute
-      );
-    };
-  }, []);
-
-  // ------------------------------------------------
-  // ADMIN KEYBOARD SHORTCUT
-  // Ctrl + Shift + A
-  // ------------------------------------------------
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      const isAdminShortcut =
+      if (
         (event.ctrlKey || event.metaKey) &&
         event.shiftKey &&
-        event.key.toLowerCase() === 'a';
+        event.key.toLowerCase() === 'a'
+      ) {
+        event.preventDefault();
 
-      if (!isAdminShortcut) return;
-
-      event.preventDefault();
-
-      if (isAdminRoute()) {
-        closeAdmin();
-      } else {
-        openAdmin();
+        if (isAdminRoute()) {
+          closeAdmin();
+        } else {
+          openAdmin();
+        }
       }
     };
 
-    window.addEventListener(
-      'keydown',
-      handleKeyDown
-    );
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        'keydown',
-        handleKeyDown
-      );
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
-  // ------------------------------------------------
+  // --------------------------------------------------
+  // ADMIN AUTHORIZATION
+  // --------------------------------------------------
+
+  const checkAdmin = async (user) => {
+    if (!user || !supabase) {
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+      setUserEmail('');
+      return false;
+    }
+
+    setIsAuthenticated(true);
+    setUserEmail(user.email || '');
+
+    const { data: adminRow, error } = await supabase
+      .from('portfolio_admins')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Admin authorization check failed:', error);
+
+      setIsAdmin(false);
+
+      setAuthError(
+        'Could not verify administrator access. Check the Supabase administrator table and RLS policies.'
+      );
+
+      return false;
+    }
+
+    const allowed = Boolean(adminRow);
+
+    setIsAdmin(allowed);
+
+    setAuthError(
+      allowed
+        ? ''
+        : 'This account is not registered as a portfolio administrator.'
+    );
+
+    return allowed;
+  };
+
+  // --------------------------------------------------
+  // LOAD PUBLICLY PUBLISHED CONTENT
+  // --------------------------------------------------
+
+  const loadPublishedContent = async () => {
+    if (!supabaseConfigured) {
+      setContentLoading(false);
+      return;
+    }
+
+    const { data: row, error } = await supabase
+      .from('portfolio_public_content')
+      .select('content')
+      .eq('id', CONTENT_ROW_ID)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        'Could not load published portfolio content:',
+        error
+      );
+    } else if (row?.content) {
+      setData(
+        mergeDefaults(buildDefaults(), row.content)
+      );
+    }
+
+    setContentLoading(false);
+  };
+
+  // --------------------------------------------------
+  // LOAD PRIVATE ADMIN DRAFT
+  // --------------------------------------------------
+
+  const loadDraft = async () => {
+    if (!isAuthenticated || !isAdmin || !supabase) {
+      throw new Error(
+        'Administrator authorization is required to load draft content.'
+      );
+    }
+
+    const { data: row, error } = await supabase
+      .from('portfolio_content')
+      .select('content')
+      .eq('id', CONTENT_ROW_ID)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const draft =
+      row?.content && Object.keys(row.content).length > 0
+        ? mergeDefaults(buildDefaults(), row.content)
+        : buildDefaults();
+
+    return draft;
+  };
+
+  // --------------------------------------------------
+  // SAVE PRIVATE DRAFT
+  // --------------------------------------------------
+
+  const saveDraft = async (nextContent) => {
+    if (!isAuthenticated || !isAdmin || !supabase) {
+      throw new Error(
+        'Administrator authorization is required to save a draft.'
+      );
+    }
+
+    const { error } = await supabase
+      .from('portfolio_content')
+      .upsert(
+        {
+          id: CONTENT_ROW_ID,
+          content: nextContent,
+          is_published: false,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      );
+
+    if (error) throw error;
+
+    return true;
+  };
+
+  // --------------------------------------------------
+  // PUBLISH CONTENT
+  // --------------------------------------------------
+
+  const publishDraft = async (nextContent) => {
+    await saveDraft(nextContent);
+
+    const { error } = await supabase.rpc(
+      'publish_portfolio_content'
+    );
+
+    if (error) throw error;
+
+    setData(
+      mergeDefaults(buildDefaults(), nextContent)
+    );
+
+    return true;
+  };
+
+  // --------------------------------------------------
+  // RESTORE SUPABASE SESSION
+  // --------------------------------------------------
+
+  useEffect(() => {
+    if (!supabaseConfigured) {
+      setAuthError(
+        'Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment.'
+      );
+
+      setAuthLoading(false);
+      setContentLoading(false);
+
+      return undefined;
+    }
+
+    let mounted = true;
+
+    const initialize = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error(
+          'Could not restore Supabase session:',
+          error
+        );
+      }
+
+      if (mounted) {
+        await checkAdmin(session?.user ?? null);
+        await loadPublishedContent();
+        setAuthLoading(false);
+      }
+    };
+
+    initialize();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setTimeout(async () => {
+          if (!mounted) return;
+
+          await checkAdmin(session?.user ?? null);
+        }, 0);
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // --------------------------------------------------
   // DYNAMIC SEO AND FAVICON
-  // ------------------------------------------------
+  // --------------------------------------------------
 
   useEffect(() => {
     const meta = data.siteMeta || {};
@@ -351,9 +402,7 @@ export const PortfolioProvider = ({ children }) => {
 
       if (!element && content) {
         element = document.createElement('meta');
-
         element.setAttribute(attribute, value);
-
         document.head.appendChild(element);
       }
 
@@ -366,14 +415,10 @@ export const PortfolioProvider = ({ children }) => {
       }
     };
 
-    // Page title.
     if (meta.title?.trim()) {
       document.title = meta.title.trim();
-    } else if (meta.title === '') {
-      document.title = '';
     }
 
-    // SEO metadata.
     setMeta(
       'meta[name="description"]',
       'name',
@@ -395,7 +440,6 @@ export const PortfolioProvider = ({ children }) => {
       meta.themeColor || ''
     );
 
-    // Open Graph metadata.
     setMeta(
       'meta[property="og:title"]',
       'property',
@@ -417,178 +461,155 @@ export const PortfolioProvider = ({ children }) => {
       meta.ogImageUrl || ''
     );
 
-    // Favicon.
-    let favicon =
-      document.head.querySelector('link[rel="icon"]');
+    let favicon = document.head.querySelector(
+      'link[rel="icon"]'
+    );
 
     if (meta.faviconUrl) {
       if (!favicon) {
         favicon = document.createElement('link');
         favicon.rel = 'icon';
-
         document.head.appendChild(favicon);
       }
 
       favicon.href = meta.faviconUrl;
-    } else if (favicon) {
-      favicon.removeAttribute('href');
     }
   }, [data.siteMeta]);
 
-  // ------------------------------------------------
-  // UPDATE PORTFOLIO CONTENT
-  // ------------------------------------------------
+  // --------------------------------------------------
+  // SUPABASE LOGIN
+  // --------------------------------------------------
 
-  const updateData = (updater) => {
-    setData((previous) => {
-      const updated =
-        typeof updater === 'function'
-          ? updater(previous)
-          : {
-            ...previous,
-            ...updater,
-          };
-
-      try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(updated)
-        );
-      } catch (error) {
-        console.error(
-          'Failed to save portfolio data:',
-          error
-        );
-      }
-
-      return updated;
-    });
-  };
-
-  // ------------------------------------------------
-  // RESET PORTFOLIO CONTENT
-  // ------------------------------------------------
-
-  const resetToDefaults = () => {
-    const defaults = buildDefaults();
-
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LEGACY_STORAGE_KEY);
-
-    setData(defaults);
-  };
-
-  // ------------------------------------------------
-  // ADMIN LOGIN
-  // ------------------------------------------------
-
-  const login = (username, password) => {
-    const normalizedUsername =
-      String(username || '').trim();
-
-    const suppliedPassword =
-      String(password || '');
-
-    if (
-      normalizedUsername === ADMIN_CREDENTIALS.username &&
-      suppliedPassword === ADMIN_CREDENTIALS.password
-    ) {
-      setIsAuthenticated(true);
-
-      try {
-        sessionStorage.setItem(
-          AUTH_KEY,
-          'true'
-        );
-      } catch (error) {
-        console.error(
-          'Unable to save admin session:',
-          error
-        );
-      }
-
+  const login = async (email, password) => {
+    if (!supabaseConfigured) {
       return {
-        success: true,
+        success: false,
+        message: 'Supabase is not configured.',
       };
     }
 
-    return {
-      success: false,
-      message: 'Invalid username or password',
-    };
-  };
+    setAuthError('');
 
-  // ------------------------------------------------
-  // ADMIN LOGOUT
-  // ------------------------------------------------
+    const {
+      data: result,
+      error,
+    } = await supabase.auth.signInWithPassword({
+      email: String(email || '').trim(),
+      password: String(password || ''),
+    });
 
-  const logout = () => {
-    setIsAuthenticated(false);
-
-    try {
-      sessionStorage.removeItem(AUTH_KEY);
-    } catch (error) {
-      console.error(
-        'Unable to clear admin session:',
-        error
-      );
+    if (error) {
+      return {
+        success: false,
+        message: error.message,
+      };
     }
+
+    const allowed = await checkAdmin(result.user);
+
+    if (!allowed) {
+      await supabase.auth.signOut();
+
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+
+      return {
+        success: false,
+        message:
+          'This account is authenticated but is not on the administrator allowlist.',
+      };
+    }
+
+    return { success: true };
   };
 
-  // ------------------------------------------------
+  // --------------------------------------------------
+  // SUPABASE LOGOUT
+  // --------------------------------------------------
+
+  const logout = async () => {
+    if (supabase) {
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error('Supabase logout failed:', error);
+      }
+    }
+
+    setIsAuthenticated(false);
+    setIsAdmin(false);
+    setUserEmail('');
+  };
+
+  // Backwards-compatible alias.
+  // Updates are now saved as private drafts.
+  const updateData = saveDraft;
+
+  const resetToDefaults = () =>
+    saveDraft(buildDefaults());
+
+  // --------------------------------------------------
   // EXPORT BACKUP
-  // ------------------------------------------------
+  // --------------------------------------------------
 
   const exportBackup = () => {
-    const jsonString =
-      `data:application/json;charset=utf-8,${encodeURIComponent(
-        JSON.stringify(data, null, 2)
-      )}`;
-
-    const anchor = document.createElement('a');
-
-    anchor.setAttribute('href', jsonString);
-
-    anchor.setAttribute(
-      'download',
-      `portfolio-content-backup-${new Date()
-        .toISOString()
-        .slice(0, 10)}.json`
+    const blob = new Blob(
+      [JSON.stringify(data, null, 2)],
+      { type: 'application/json' }
     );
 
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+
+    anchor.href = url;
+
+    anchor.download =
+      `portfolio-content-backup-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+
     document.body.appendChild(anchor);
-
     anchor.click();
-
     anchor.remove();
+
+    URL.revokeObjectURL(url);
   };
 
-  // ------------------------------------------------
+  // --------------------------------------------------
   // IMPORT BACKUP
-  // ------------------------------------------------
+  // --------------------------------------------------
 
-  const importBackup = (jsonString) => {
+  const importBackup = async (jsonString) => {
     try {
       const parsed = JSON.parse(jsonString);
 
-      updateData((previous) =>
-        mergeDefaults(previous, parsed)
+      const merged = mergeDefaults(
+        buildDefaults(),
+        parsed
       );
 
-      return true;
+      await saveDraft(merged);
+
+      return {
+        success: true,
+        content: merged,
+      };
     } catch (error) {
       console.error(
-        'Failed to import backup:',
+        'Failed to import portfolio backup:',
         error
       );
 
-      return false;
+      return {
+        success: false,
+        message: error.message,
+      };
     }
   };
 
-  // ------------------------------------------------
+  // --------------------------------------------------
   // PROVIDER
-  // ------------------------------------------------
+  // --------------------------------------------------
 
   return (
     <PortfolioContext.Provider
@@ -596,20 +617,29 @@ export const PortfolioProvider = ({ children }) => {
         ...data,
 
         updateData,
+        saveDraft,
+        loadDraft,
+        publishDraft,
+
         resetToDefaults,
 
         exportBackup,
         importBackup,
 
         isAdminOpen,
-
-        // Route-aware setter, not the raw React setter.
         setIsAdminOpen: setAdminOpen,
 
         openAdmin,
         closeAdmin,
 
         isAuthenticated,
+        isAdmin,
+        userEmail,
+
+        authLoading,
+        authError,
+        contentLoading,
+
         login,
         logout,
       }}
