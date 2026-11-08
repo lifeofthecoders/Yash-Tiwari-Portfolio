@@ -1,59 +1,79 @@
-# Yash Tiwari — Premium Portfolio & Supabase Content Manager
+<div align="center">
 
-A cinematic, responsive portfolio created for **Yash Tiwari**, a B.Tech student in **Artificial Intelligence & Data Science** at **JECRC University**. The project combines a custom React interface, motion-led interactions, portfolio sections, and a page-wise content management panel backed by Supabase.
+# Yash Tiwari - Portfolio
 
-**Designed and developed by Sumit Panchal for client Yash Tiwari.** Sumit Panchal is the author and owner of the project's custom source code, architecture, visual implementation, and CMS integration, subject to any separate written agreement between the parties. Yash Tiwari's name, likeness, personal profile information, resume, certificates, and client-provided materials are used for the commissioned portfolio and are not represented as Sumit Panchal's personal information or achievements.
+### A cinematic personal portfolio with a Supabase-powered content management system.
+
+[![Live Portfolio](https://img.shields.io/badge/Live%20Portfolio-Visit%20Website-f50604?style=for-the-badge&logo=vercel&logoColor=white)](https://yash-tiwari-portfolio.vercel.app/)
+[![React](https://img.shields.io/badge/React-19-20232a?style=flat-square&logo=react)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-CMS-3FCF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+
+**Designed and developed by [Sumit Panchal](https://github.com/lifeofthecoders) for client Yash Tiwari.**
+
+[Overview](#-overview) · [Features](#-highlights) · [Technology](#-technology-stack) · [Setup](#-getting-started) · [CMS](#-supabase-cms) · [Deployment](#-deployment) · [Ownership](#-authorship--ownership)
+
+</div>
 
 ---
 
-## 🚀 Key Features
+## 🎯 Overview
 
-- **Cinematic visual design:** A high-contrast crimson palette (`#f50604`) with a deep dark canvas, responsive layouts, and custom typography.
-- **Hero experience:** Video background with playback and mute controls, responsive headline, highlight cards, and a downloadable resume.
-- **Interactive About section:** Animated lanyard-style ID badge and profile presentation.
-- **Interactive cursor canvas:** Native HTML5 canvas effects with touch-device handling.
-- **Animated roadmap:** Scroll-responsive SVG path and timeline cards.
-- **Projects showcase:** Bento-style project cards, visual elements, and case-study details.
-- **Page-wise content manager:** Edit headings, copy, links, CTAs, tags, projects, academic records, navigation, metadata, and nested content without editing source files.
-- **Supabase Cloud CMS:** Email/password authentication, administrator allowlist, protected draft content, and explicit publishing to a separate public content table.
-- **Draft and publish workflow:** `Save Draft` stores private changes; `Publish Changes` makes the saved content available to public visitors.
-- **JSON backups:** Export and import portfolio content from the Backup tab.
-- **Responsive and animated UI:** Designed for desktop, tablet, and mobile layouts.
+This project is a cinematic, responsive portfolio created for **Yash Tiwari**, a B.Tech student in **Artificial Intelligence & Data Science at JECRC University**. It brings together a custom React interface, motion-led interactions, project and academic showcases, and a page-wise content manager.
+
+The content manager is powered by **Supabase Auth and PostgreSQL**. Administrators can edit portfolio content, save private drafts, and explicitly publish approved changes to the public website.
+
+> **Project roles:** Sumit Panchal is the developer and owner of the custom project implementation. Yash Tiwari is the client and the subject of the portfolio. Client-specific content and supplied materials remain attributable to their respective rights holders.
+
+## ✨ Highlights
+
+| Area | What it provides |
+|---|---|
+| Visual identity | Deep dark surfaces, a crimson accent palette, responsive layouts, and custom typography |
+| Hero | Video background, playback and mute controls, headline, highlight cards, and resume link |
+| About | Profile presentation with an animated lanyard-style ID badge |
+| Interactive canvas | Native HTML canvas cursor effects with touch-device handling |
+| Roadmap | Scroll-responsive SVG path and animated timeline cards |
+| Projects | Bento-style project presentation and case-study details |
+| Content manager | Page-wise editing for copy, links, CTAs, tags, cards, academic details, and nested content |
+| Cloud CMS | Supabase authentication, admin allowlist, protected drafts, and separate public content |
+| Publishing workflow | Save Draft privately, review, then publish explicitly |
+| Backup | JSON export and import for portfolio content |
 
 ## 🧰 Technology Stack
 
 ### Application
 
-- **React 19** — Component-based user interface.
-- **Vite 8** — Development server and production build tooling.
-- **JavaScript** — Application logic.
-- **Tailwind CSS v4** — Utility-first styling.
-- **PostCSS** — CSS processing.
+- **React 19** - Component-based user interface.
+- **Vite 8** - Development server and production build tooling.
+- **JavaScript** - Application logic.
+- **Tailwind CSS v4** - Utility-first styling.
+- **PostCSS** - CSS processing.
 
-### Animation and visual experience
+### Motion and visuals
 
-- **Framer Motion** — Component and interaction animations.
-- **AOS** — Scroll-triggered animation support.
-- **Native HTML5 Canvas** — Cursor effects and particle visuals.
-- **SVG** — Animated roadmap path and vector graphics.
+- **Framer Motion** - Component and interaction animations.
+- **AOS** - Scroll-triggered animation support.
+- **HTML5 Canvas** - Cursor effects and particle visuals.
+- **SVG** - Animated roadmap path and vector graphics.
 
-### Services and utilities
+### Backend services and utilities
 
-- **Supabase JavaScript client** — Authentication and database access.
-- **Supabase Auth** — Administrator sign-in and sessions.
-- **Supabase PostgreSQL with Row Level Security (RLS)** — Private drafts and public published content.
-- **EmailJS / email fallback** — Contact form integration, where configured.
-- **Lucide React** — Icon library.
+- **Supabase Auth** - Administrator authentication and session management.
+- **Supabase PostgreSQL** - Draft and published portfolio content.
+- **Row Level Security (RLS)** - Database-level access control.
+- **Supabase JavaScript client** - Frontend connection to Supabase.
+- **EmailJS / email fallback** - Contact form integration, where configured.
+- **Lucide React** - Icon library.
 
 ### Typography
 
-The interface uses the project's configured fonts, including Space Grotesk, Playfair Display, Inter, and Alex Brush where available.
+The interface uses the project's configured fonts, including **Space Grotesk, Playfair Display, Inter, and Alex Brush**, where available.
 
----
+## 📁 Project Structure
 
-## 🗂️ Project Structure
-
-The main application and CMS files are organized as follows:
+The following tree shows the main application and CMS files. Individual assets and components may evolve as the project is maintained.
 
 ```text
 yash-tiwari-portfolio/
@@ -83,17 +103,17 @@ yash-tiwari-portfolio/
 │   │   ├── SoftSkills.jsx
 │   │   └── TechnicalSkills.jsx
 │   ├── context/
-│   │   └── PortfolioContext.jsx     # Portfolio state and Supabase CMS logic
+│   │   └── PortfolioContext.jsx     # State, Auth, draft and publish logic
 │   ├── data/
-│   │   └── portfolioData.js         # Bundled default portfolio content
+│   │   └── portfolioData.js         # Bundled default content
 │   ├── lib/
 │   │   └── supabase.js              # Supabase client configuration
 │   ├── App.jsx
 │   ├── index.css
 │   └── main.jsx
 ├── supabase/
-│   └── secure-cms-migration.sql     # Supabase CMS schema, RLS, and publish function
-├── .env.local                       # Local secrets/configuration (not committed)
+│   └── secure-cms-migration.sql     # CMS schema, RLS and publish function
+├── .env.example                     # Safe environment-variable template
 ├── .gitignore
 ├── index.html
 ├── package.json
@@ -102,67 +122,55 @@ yash-tiwari-portfolio/
 └── README.md
 ```
 
-> The tree highlights the main application and CMS paths. Individual component or asset files may vary as the project evolves.
-
----
-
-## ⚙️ Getting Started Locally
+## ⚙️ Getting Started
 
 ### Prerequisites
 
-- **Node.js:** Use Node.js `20.19+` or `22.12+` (a supported current LTS release is recommended).
-- **npm:** Installed with Node.js.
-- **Git:** Required to clone and pull the repository.
+- **Node.js:** `20.19+` or `22.12+` (use a supported LTS release).
+- **npm:** Included with Node.js.
+- **Git:** Required to clone the repository.
 
 ### 1. Clone the repository
 
 ```bash
 git clone https://github.com/lifeofthecoders/Yash-Tiwari-Portfolio.git
-```
-
-### 2. Navigate into the project
-
-```bash
 cd yash-tiwari-portfolio
 ```
 
-### 3. Install dependencies
+### 2. Install dependencies
 
 ```bash
 npm ci
 ```
 
-If you intentionally do not have a lockfile, use `npm install` instead.
+Use `npm install` only when you intentionally need to regenerate or update the lockfile.
 
-### 4. Configure Supabase locally
+### 3. Configure local environment variables
 
-Create a `.env.local` file in the project root, alongside `package.json`:
+Create a file named `.env.local` in the project root, alongside `package.json`:
 
 ```env
 VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
 ```
 
-Use:
+Use the **base Supabase Project URL**. It should end in `.supabase.co`; do not append `/rest/v1/`.
 
-- The **Project URL** from Supabase. It should end in `.supabase.co`; do not append `/rest/v1/`.
-- The **Publishable key** beginning with `sb_publishable_...` (or a legacy `anon` key, if that is what the project uses).
+Use the Supabase **publishable key** beginning with `sb_publishable_...`, or a legacy `anon` key if that is what the project uses. The application intentionally reads this value from `VITE_SUPABASE_ANON_KEY`; keep the variable name exactly as shown.
 
-The application currently reads the publishable/anon key through the variable name `VITE_SUPABASE_ANON_KEY`. Keep that variable name exactly as shown.
+> **Security:** Vite exposes variables prefixed with `VITE_` to browser code. Only use a Supabase publishable/anon key here. Never put an `sb_secret_...` key, `service_role` key, database password, or other privileged secret in `.env.local` or any frontend source file.
 
-**Never put a Supabase `sb_secret_...` key, `service_role` key, database password, or other privileged secret in a Vite environment variable.** Variables prefixed with `VITE_` are exposed to browser code. Use only the public publishable/anon key and rely on RLS for authorization.
+The repository's `.gitignore` excludes `.env` and `.env.*` files while allowing `.env.example`. Keep real values in `.env.local` and never commit that file.
 
-The repository's `.gitignore` excludes `.env` and `.env.*` files while allowing `.env.example`. Keep real values in `.env.local`; do not commit that file.
-
-### 5. Start the development server
+### 4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Vite in the terminal (normally `http://localhost:5173`). To open the admin route, append `#admin` to the URL.
+Open the local URL printed in the terminal (normally `http://localhost:5173`). To open the administrator route, append `#admin` to the URL.
 
-### 6. Build and preview
+### 5. Build and preview
 
 ```bash
 npm run build
@@ -171,130 +179,137 @@ npm run preview
 
 The production build is generated in `dist/`.
 
----
+## 🔐 Supabase CMS
 
-## 🔐 Supabase CMS Setup and Administration
+The CMS uses Supabase Auth and database authorization. The React source does **not** contain a default administrator username or password.
 
-The CMS uses Supabase Auth and database authorization. It does not use a hardcoded username/password in the React source code.
+### Database model
 
-### Database design
+| Database object | Purpose | Access model |
+|---|---|---|
+| `portfolio_admins` | UUID allowlist of administrators | An authenticated user can read their own allowlist row; administration is restricted |
+| `portfolio_content` | Private draft content | RLS restricts access to allowlisted administrators |
+| `portfolio_public_content` | Published portfolio content | Public read; modifications restricted to allowlisted administrators |
+| `public.publish_portfolio_content()` | Copies the saved `main` draft into the public content table | Internal admin allowlist check; execution granted to `authenticated`, revoked from `PUBLIC` and `anon` |
 
-The CMS uses three main tables:
+### First-time setup for a new Supabase project
 
-- **`portfolio_admins`** — UUID allowlist of users permitted to administer the portfolio.
-- **`portfolio_content`** — Private draft content. Access is restricted by RLS to allowlisted administrators.
-- **`portfolio_public_content`** — Published content readable by public visitors; modifications are restricted to allowlisted administrators.
-
-The database function **`public.publish_portfolio_content()`** copies the saved `main` draft into the public content table. The function checks the authenticated user's UUID against `portfolio_admins`. Execution is revoked from `PUBLIC` and `anon` and granted to `authenticated`; the function's internal allowlist check remains required.
-
-### First-time Supabase setup
-
-For a **new Supabase project**:
-
-1. Create the Supabase project.
+1. Create a Supabase project.
 2. Create the administrator account under **Authentication → Users**.
-3. Copy that user's UUID and insert the UUID into `public.portfolio_admins`.
-4. Run `supabase/secure-cms-migration.sql` in the Supabase SQL Editor.
-5. Verify the tables, RLS policies, and publish function before connecting the frontend.
-6. Configure the local environment variables described above.
+3. Copy the administrator's user UUID and add that UUID to `public.portfolio_admins`.
+4. Review and run `supabase/secure-cms-migration.sql` in the Supabase SQL Editor.
+5. Verify the tables, RLS policies, and publish function.
+6. Configure the frontend environment variables described above.
 
-The migration and policy checks have already been run for the current `yash-tiwari-portfolio` Supabase project. Do not rerun migration SQL on the existing production database unless you have reviewed the script and intend to apply it again. Keep a database backup before schema or policy changes.
+**Existing production database:** The migration and policy checks have already been run and verified for the current `yash-tiwari-portfolio` Supabase project. Do not rerun migration SQL on that existing production database unless you have reviewed the script and intentionally plan to apply it again. Take a database backup before schema or policy changes.
 
-### Opening the Admin Panel
+### Open the Admin Panel
 
 - Use the portfolio's footer admin/settings control, where available; or
-- Navigate directly to `/#admin` on the local or deployed site.
+- Navigate to `/#admin` on the local or deployed website.
 
-Sign in with the email and password of the Supabase Auth user whose UUID is present in `portfolio_admins`. There is no default password stored in `AdminPanel.jsx`. If the password is forgotten, use the configured Supabase password-recovery flow or reset the account through the Supabase authentication administration tools.
+Sign in using the email and password of the Supabase Auth user whose UUID is present in `portfolio_admins`. There is **no default password** in `AdminPanel.jsx`.
 
-### Editing and publishing content
+The current Admin Panel does not include a self-service **Forgot Password** control. If the password is forgotten, reset it through the Supabase Authentication administration tools. Do not rely on browser autofill as the source of truth for credentials.
+
+### Edit, save, and publish
 
 1. Sign in to the Admin Panel.
-2. Choose a page-wise tab (Profile & Navigation, Home / Hero, About, Roadmap, Skills & Strengths, Projects, Academics & Credentials, Contact, Footer, or All Content).
-3. Edit the relevant values and nested content.
-4. Click **Save Draft**. The changes remain private in `portfolio_content`.
-5. Review the draft. Click **Publish Changes** and confirm in the in-app confirmation dialog.
-6. The publish function copies the draft to `portfolio_public_content`; public visitors can then read the published content.
+2. Select a page-wise tab: Profile & Navigation, Home / Hero, About, Roadmap, Skills & Strengths, Projects, Academics & Credentials, Contact, Footer, or All Content.
+3. Edit the required values, cards, links, tags, or nested content.
+4. Click **Save Draft**. Changes are stored privately in `portfolio_content`.
+5. Review the draft, then click **Publish Changes** and confirm in the in-app dialog.
+6. The publish function copies the draft into `portfolio_public_content`, where public visitors can read it.
 
-Saving a draft does not update the public portfolio. Publishing is a separate, explicit action.
+**Saving is not publishing.** Draft changes remain private until the administrator explicitly publishes them.
 
-### Backup and migration of older browser content
+### Backup and earlier browser content
 
 The Backup tab supports JSON export and import. An imported backup is saved as a private draft; publish it separately when ready.
 
-The earlier starter version used browser `localStorage`. Those old browser-specific edits do not automatically migrate to Supabase. If an export from the old Admin Panel is available, import it using the Backup tab. Do not assume that old browser data has been transferred unless you have imported and verified it.
+The earlier starter version used browser `localStorage`. Those old browser-specific edits do not automatically migrate to Supabase or sync across devices. If an export from the old Admin Panel is available, import it through the Backup tab and verify the result before publishing.
 
 ### Media and file uploads
 
-The content manager edits media URL/path fields. It does not currently provide a full Supabase Storage upload workflow. For files stored in the site's `public/` folder, add the asset to the project and enter its public path (for example, `/images/profile.webp`).
+The content manager edits media URL/path fields; it does not currently provide a full Supabase Storage upload workflow. To use a file stored with the website, add it to the appropriate project asset folder and enter its public path (for example, `/images/profile.webp`).
 
----
+## 🚀 Deployment on Vercel
 
-## 🌐 Vercel Deployment
+This is a **Vite + React single-page application** and can be deployed through Vercel.
 
-This project is a Vite-based React single-page application and is deployed through Vercel.
-
-1. Push the project to the connected GitHub repository: `lifeofthecoders/yash-tiwari-portfolio`.
+1. Push the project to the connected GitHub repository.
 2. Open the existing Vercel project and go to **Settings → Environment Variables**.
 3. Add the following variables:
 
-   - `VITE_SUPABASE_URL` — the base Supabase Project URL, without `/rest/v1/`.
-   - `VITE_SUPABASE_ANON_KEY` — the Supabase publishable key (`sb_publishable_...`) or legacy anon key.
+   | Name | Value |
+   |---|---|
+   | `VITE_SUPABASE_URL` | Base Supabase Project URL, without `/rest/v1/` |
+   | `VITE_SUPABASE_ANON_KEY` | Supabase publishable key (`sb_publishable_...`) or legacy anon key |
 
-4. Select the environments you use (Production, Preview, and/or Development).
-5. Save the variables. In Vercel, choose the **Config** type for these `VITE_` values because they are intentionally available to the browser. Do not add a Supabase secret/service-role key.
-6. Redeploy after changing environment variables so the new build receives them.
-7. Open the deployed `/#admin` route and verify login, draft saving, and publishing.
+4. Select the required environments: **Production**, **Preview**, and/or **Development**.
+5. In Vercel, use the **Config** type for these `VITE_` values because they are intentionally exposed to the browser. Do not add a Supabase secret or service-role key.
+6. Save the variables and redeploy so the new build receives them.
+7. Verify the live website, admin login, draft saving, and publishing workflow.
 
-Use the existing Vercel project; a separate custom Vercel environment is not required for ordinary Production, Preview, or Development configuration.
+A custom Vercel environment is not required for the standard Production, Preview, or Development setup.
 
----
+**Current live portfolio:** [yash-tiwari-portfolio.vercel.app](https://yash-tiwari-portfolio.vercel.app/)
 
-## 🧭 Content Reference
+## 🧭 Content and Code Reference
 
-The main content and implementation locations are:
-
-| Area | File / location |
+| Area | Main file / location |
 |---|---|
 | Default portfolio content | `src/data/portfolioData.js` |
-| Admin UI and publishing controls | `src/components/AdminPanel.jsx` |
-| Portfolio state, Auth, draft and publish flow | `src/context/PortfolioContext.jsx` |
+| Admin interface and publishing controls | `src/components/AdminPanel.jsx` |
+| Portfolio state, authentication, drafts, and publishing | `src/context/PortfolioContext.jsx` |
 | Supabase client and environment variables | `src/lib/supabase.js` |
-| Supabase schema, RLS, and publish function | `supabase/secure-cms-migration.sql` |
+| Database schema, RLS, and publish function | `supabase/secure-cms-migration.sql` |
 | Global styles and fonts | `src/index.css` |
-| App entry and composition | `src/App.jsx`, `src/main.jsx` |
-| Public media | `public/` and `src/assets/` |
+| Application composition and entry point | `src/App.jsx`, `src/main.jsx` |
+| Public media | `public/`, `src/assets/` |
 
----
+## 🛡️ Security Notes
 
-## 🤝 Project Authorship, Ownership, and Third-Party Notices
+- Keep `.env.local` out of Git. Confirm with `git check-ignore -v .env.local`.
+- Use only the Supabase publishable/anon key in frontend configuration.
+- Never expose a Supabase secret/service-role key in Vite variables or client-side code.
+- Keep RLS enabled and review policies before changing database access.
+- Keep the publish function's internal administrator allowlist check and its restricted execution grants.
+- Use a unique, strong administrator password and rotate it if it has been exposed.
+- Do not commit credentials, private tokens, or unredacted environment files.
+
+## 🧑‍💻 Authorship & Ownership
 
 This portfolio was **designed and developed by Sumit Panchal for client Yash Tiwari**.
 
-The project-specific source code, custom UI implementation, application architecture, page composition, animations authored for this project, and Supabase CMS integration are the work of **Sumit Panchal**, who retains ownership and rights to that custom work, subject to any separate written agreement.
+Sumit Panchal is the author and owner of the **custom project implementation**, including the project-specific source code, application architecture, custom UI, page composition, authored animations, and Supabase CMS integration, subject to any separate written agreement between the parties.
 
-The custom implementation is not intended to be a copied or rebranded version of another GitHub repository or account. Third-party frameworks, packages, fonts, icons, and tools are dependencies or resources used under their respective licenses; their authors retain their own rights. Any client-provided or client-specific material—including Yash Tiwari's name, likeness, personal details, resume, certificates, and profile content—remains attributable to the client or its respective rights holder.
+Yash Tiwari is the client and the subject of the portfolio. His name, likeness, personal profile information, resume, certificates, and client-provided materials are not represented as Sumit Panchal's personal information or achievements. Those client-specific materials remain attributable to the client or their respective rights holders.
 
-No ownership of third-party trademarks, packages, or client-provided personal materials is claimed by the project author.
+The custom implementation is not intended to be a copied or rebranded version of another GitHub repository or account. Third-party frameworks, packages, fonts, icons, and other resources remain the property of their respective authors and are used under their applicable licenses. No ownership of third-party trademarks, libraries, or client-provided materials is claimed by the project author.
 
 ## 📜 License
 
-**All rights reserved for the custom project work authored by Sumit Panchal.** No permission is granted to copy, redistribute, modify, or commercially reuse the custom source code, design implementation, or project-specific materials without prior written permission from the rights holder. Third-party dependencies and assets remain subject to their own license terms. Client-specific materials remain subject to the rights of the client or their respective owners.
+**All rights reserved for the custom project work authored by Sumit Panchal**, subject to any separate written agreement with the client. No permission is granted to copy, redistribute, modify, or commercially reuse the custom source code, design implementation, or project-specific materials without prior written permission from the applicable rights holder. Third-party dependencies and assets remain subject to their own license terms. Client-specific materials remain subject to the rights of the client or their respective owners.
+
+## 📬 Project Details
+
+- **Project:** Yash Tiwari - Premium Portfolio
+- **Client / portfolio subject:** Yash Tiwari
+- **Developer / owner of custom implementation:** Sumit Panchal
+- **GitHub:** [lifeofthecoders/yash-tiwari-portfolio](https://github.com/lifeofthecoders/Yash-Tiwari-Portfolio)
+- **Live website:** [yash-tiwari-portfolio.vercel.app](https://yash-tiwari-portfolio.vercel.app/)
+
+For project implementation, maintenance, or collaboration enquiries, use the contact details maintained by the repository owner.
 
 ---
 
-## 📫 Project and Client
-
-- **Project:** Yash Tiwari — Premium Portfolio
-- **Client:** Yash Tiwari
-- **Developer and owner of custom project implementation:** Sumit Panchal
-- **GitHub repository:** https://github.com/lifeofthecoders/Yash-Tiwari-Portfolio
-- **Vercel deployment:** https://yash-tiwari-portfolio.vercel.app/
-
-For project implementation, maintenance, or collaboration enquiries, contact the developer through the contact details maintained by the repository owner.
-
----
+<div align="center">
 
 **Developed by Sumit Panchal for Yash Tiwari.**
 
+**PRECISION. QUALITY. TRUST. DELIVERED.**
+
 © 2026 Sumit Panchal. All rights reserved for the custom project work, subject to the notices above.
+
+</div>

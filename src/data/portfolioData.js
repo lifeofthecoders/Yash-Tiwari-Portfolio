@@ -1,5 +1,5 @@
 // ============================================================
-// portfolioData.js — Centralized configuration for Yash Tiwari's Portfolio
+// portfolioData.js - Centralized configuration for Yash Tiwari's Portfolio
 // 100% Yash Tiwari verified content & assets
 // 0% reference-client data
 // ============================================================
@@ -74,7 +74,7 @@ export const aboutContent = {
   openTo: "Learning Opportunities, Projects & Collaborations",
   accentLine: "curiosity meets discipline.",
   badgeLabel: "About",
-  imageAlt: "Yash Tiwari — AI & Data Science Student",
+  imageAlt: "Yash Tiwari - AI & Data Science Student",
   imageUrl: "/images/yash-poster.png",
   facts: [
     { label: "University & Term", value: "JECRC University · 1st Semester" },
@@ -433,7 +433,7 @@ export const educationData = [
   {
     isCurrent: true,
     year: "2026 – Present",
-    degree: "B.Tech — Artificial Intelligence & Data Science",
+    degree: "B.Tech - Artificial Intelligence & Data Science",
     institution: "JECRC University",
     location: "Alwar/NCR, India",
     grade: "Current Status: 1st Semester",
@@ -502,7 +502,7 @@ export const footerContent = {
   contactButtonLabel: "Get In Touch",
   bottomRoleLabel: "B.Tech AI & Data Science Student",
   taglines: [
-    "B.Tech — Artificial Intelligence & Data Science",
+    "B.Tech - Artificial Intelligence & Data Science",
     "JECRC University, Alwar/NCR · 1st Semester",
     "Aspiring Software Developer & AI Enthusiast",
   ],

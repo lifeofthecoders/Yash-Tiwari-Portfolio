@@ -1,4 +1,4 @@
-# Yash Tiwari Portfolio — Supabase CMS integration
+# Yash Tiwari Portfolio - Supabase CMS integration
 
 ## Included replacements
 - `src/context/PortfolioContext.jsx`
