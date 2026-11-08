@@ -181,7 +181,7 @@ export const PortfolioProvider = ({ children }) => {
       }
     }
 
-    setIsAdminOpen(true);
+    ;
   };
 
   // ------------------------------------------------

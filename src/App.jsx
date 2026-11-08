@@ -1,4 +1,5 @@
-import React from 'react'
+
+import React, { useEffect } from 'react'
 import { PortfolioProvider, usePortfolio } from './context/PortfolioContext'
 import Preloader from './components/Preloader'
 import InteractiveCanvas from './components/InteractiveCanvas'
@@ -17,8 +18,24 @@ import AdminPanel from './components/AdminPanel'
 function PortfolioApp() {
   const { isAdminOpen } = usePortfolio()
 
-  // The admin is a dedicated full-page screen. The public portfolio is not
-  // mounted behind it, so the CMS never appears as a modal or pop-up.
+  // Always open the full-page Admin Panel from the top.
+  useEffect(() => {
+    if (!isAdminOpen) return
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    })
+
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo(0, 0)
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [isAdminOpen])
+
+  // The admin is a dedicated full-page screen.
   if (isAdminOpen) return <AdminPanel />
 
   return (
